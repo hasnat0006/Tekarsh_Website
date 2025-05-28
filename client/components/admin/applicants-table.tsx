@@ -1,17 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import ApplicantProfileModal from "@/components/admin/applicant-profile-modal";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -28,25 +23,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type { ExtractedCVData, JobMatchAnalysis } from "@/lib/ai-service";
+import { analyzeJobMatch, extractCVData } from "@/lib/ai-service";
+import {
   ChevronLeft,
   ChevronRight,
+  Eye,
   MoreHorizontal,
   Search,
   SlidersHorizontal,
-  Eye,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import ApplicantProfileModal from "@/components/admin/applicant-profile-modal";
-import { extractCVData, analyzeJobMatch } from "@/lib/ai-service";
-import type { ExtractedCVData, JobMatchAnalysis } from "@/lib/ai-service";
+import { useEffect, useState } from "react";
 
 import {
-  mockCVData,
-  applicantsData,
+  // applicantsData,
   jobRequirements,
+  mockCVData,
 } from "../resources/cv-data";
+
+import { ApplicantType } from "@/types/interface";
 
 const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -56,16 +58,20 @@ export default function ApplicantsTable() {
   const [positionFilter, setPositionFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
+  const [selectedApplicant, setSelectedApplicant] =
+    useState<ApplicantType | null>(null);
 
-  const [applicantData, setApplicantData] = useState<any[]>([]);
+  const [applicantData, setApplicantData] = useState<ApplicantType[]>([]);
   const [selectedCVData, setSelectedCVData] = useState<ExtractedCVData | null>(
     null
   );
   const [selectedJobMatch, setSelectedJobMatch] =
     useState<JobMatchAnalysis | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [applicants, setApplicants] = useState(applicantsData);
+  const [paginatedApplicants, setPaginatedApplicants] = useState<
+    ApplicantType[]
+  >([]);
+  // const [applicants, setApplicants] = useState<ApplicantType[]>(applicantData);
 
   const itemsPerPage = 5;
 
@@ -80,52 +86,67 @@ export default function ApplicantsTable() {
       }
       const data = await response.json();
       if (data && Array.isArray(data)) {
+
         setApplicantData(data);
+        setPaginatedApplicants(
+          data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+        );
       } else {
         console.error("Invalid applicants data format", data);
       }
     };
     fetchApplicants();
-  }, [userid]);
+  }, [userid, currentPage]);
 
-  useEffect(() => {
-    console.log("Applicants data: ", applicantData);
-  }, [applicantData]);
-
-  // Get unique positions for filter
-  const positions = Array.from(
-    new Set(applicants.map((applicant) => applicant.appliedFor))
-  );
-
-  // Filter applicants based on search term, status, and position
-  const filteredApplicants = applicants.filter((applicant) => {
+  const filteredApplicants = applicantData.filter((applicant) => {
+    // console.log("Filtering applicant: ", applicant);
     const matchesSearch =
       applicant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      applicant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      applicant.appliedFor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      applicant.skills.some((skill) =>
+      applicant.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      applicant.job_description.title
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      applicant.cv_data.skills.some((skill) =>
         skill.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
     const matchesStatus =
       statusFilter === "all" || applicant.status === statusFilter;
     const matchesPosition =
-      positionFilter === "all" || applicant.appliedFor === positionFilter;
+      positionFilter === "all" ||
+      applicant.job_description.title === positionFilter;
 
     return matchesSearch && matchesStatus && matchesPosition;
   });
 
-  // Paginate results
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
-  const paginatedApplicants = filteredApplicants.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+  // setPaginatedApplicants(
+  //   filteredApplicants.slice(
+  //     (currentPage - 1) * itemsPerPage,
+  //     currentPage * itemsPerPage
+  //   )
+  // );
+  useEffect(() => {
+    // setApplicants(applicantData);
+    console.log("Applicants data: ", applicantData);
+  }, [applicantData]);
+  
+  console.log("Paginated applicants: ", paginatedApplicants);
+  console.log(
+    "Skills applicants: ",
+    paginatedApplicants[0]?.cv_data?.skills ?? "No applicants or skills"
+  );
+  // Get unique positions for filter
+  const positions = Array.from(
+    new Set(applicantData.map((applicant) => applicant.job_description.title))
   );
 
-  const handleViewApplicant = async (applicant: any) => {
+  // Filter applicants based on search term, status, and position
+
+  const handleViewApplicant = async (applicant: ApplicantType) => {
     try {
       // Get mock CV data for this applicant
-      const cvText = mockCVData[applicant.id] || mockCVData["1"];
+      const cvText = mockCVData[applicant.applicants_id] || mockCVData["1"];
 
       // Extract CV data using AI
       const cvData = await extractCVData(cvText);
@@ -143,17 +164,19 @@ export default function ApplicantsTable() {
   };
 
   const handleStatusUpdate = (applicantId: string, newStatus: string) => {
-    setApplicants((prev) =>
+    setApplicantData((prev) =>
       prev.map((applicant) =>
-        applicant.id === applicantId
+        applicant.applicants_id === applicantId
           ? { ...applicant, status: newStatus }
           : applicant
       )
     );
 
     // Update selected applicant if it's the one being updated
-    if (selectedApplicant?.id === applicantId) {
-      setSelectedApplicant((prev) => ({ ...prev, status: newStatus }));
+    if (selectedApplicant?.applicants_id === applicantId) {
+      setSelectedApplicant((prev) =>
+        prev ? { ...prev, status: newStatus } : null
+      );
     }
   };
 
@@ -163,6 +186,23 @@ export default function ApplicantsTable() {
     setSelectedCVData(null);
     setSelectedJobMatch(null);
   };
+
+  // useEffect(() => {
+  //   console.log("Filtered applicants: ", filteredApplicants);
+  // }, [filteredApplicants]);
+
+  // useEffect(() => {
+  //   console.log("Paginated applicants: ", paginatedApplicants);
+  // }, [paginatedApplicants]);
+
+  // console.log("Positions for filter: ", positions);
+  // console.log("Current page: ", currentPage);
+  // console.log("Total pages: ", totalPages);
+  // console.log("Search term: ", searchTerm);
+  // console.log("Status filter: ", statusFilter);
+  // console.log("Position filter: ", positionFilter);
+  // console.log("Selected applicant: ", selectedApplicant);
+  // console.log("Paginated applicants: ", paginatedApplicants);
 
   return (
     <div className="space-y-4 flex flex-col items-center">
@@ -174,7 +214,7 @@ export default function ApplicantsTable() {
               <Input
                 placeholder="Search applicants by name, email, position, or skills..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                // onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -182,7 +222,7 @@ export default function ApplicantsTable() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setShowFilters(!showFilters)}
+                // onClick={() => setShowFilters(!showFilters)}
               >
                 <SlidersHorizontal className="h-4 w-4" />
               </Button>
@@ -257,7 +297,7 @@ export default function ApplicantsTable() {
             {paginatedApplicants.length > 0 ? (
               paginatedApplicants.map((applicant) => (
                 <TableRow
-                  key={applicant.id}
+                  key={applicant.applicants_id}
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleViewApplicant(applicant)}
                 >
@@ -265,8 +305,8 @@ export default function ApplicantsTable() {
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarImage
-                          src={applicant.photo || "/placeholder.svg"}
-                          alt={applicant.name}
+                          src={"/placeholder.svg"}
+                          alt={applicant.name || "Applicant"}
                         />
                         <AvatarFallback>
                           {applicant.name.charAt(0)}
@@ -275,30 +315,32 @@ export default function ApplicantsTable() {
                       <div>
                         <div className="font-medium">{applicant.name}</div>
                         <div className="text-sm text-muted-foreground">
-                          {applicant.email}
+                          {applicant.email || "Email not provided"}
                         </div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div>{applicant.appliedFor}</div>
+                      <div>{applicant.job_description.title}</div>
                       <div className="text-sm text-muted-foreground">
-                        {applicant.location}
+                        {/* {applicant.cv_data.basicInfo.location ||
+                          "Location not specified"} */}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {applicant.skills.map((skill, index) => (
-                        <Badge
-                          key={index}
-                          variant="outline"
-                          className="text-xs"
-                        >
-                          {skill}
-                        </Badge>
-                      ))}
+                      {Array.isArray(applicant.cv_data?.skills) &&
+                        applicant.cv_data.skills.slice(0, 5).map((skill, idx) => (
+                          <Badge
+                            key={idx}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {skill}
+                          </Badge>
+                        ))}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -320,19 +362,21 @@ export default function ApplicantsTable() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Progress
-                        value={applicant.aiScore}
+                        value={applicant.analysis_data.overallMatch}
                         className="h-2 w-16"
                         indicatorClassName={
-                          applicant.aiScore >= 90
+                          applicant.analysis_data.overallMatch >= 90
                             ? "bg-green-500"
-                            : applicant.aiScore >= 80
+                            : applicant.analysis_data.overallMatch >= 80
                             ? "bg-blue-500"
-                            : applicant.aiScore >= 70
+                            : applicant.analysis_data.overallMatch >= 70
                             ? "bg-yellow-500"
                             : "bg-red-500"
                         }
                       />
-                      <span className="text-sm">{applicant.aiScore}%</span>
+                      <span className="text-sm">
+                        {applicant.analysis_data.overallMatch}%
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
@@ -441,8 +485,6 @@ export default function ApplicantsTable() {
           isOpen={isModalOpen}
           onClose={closeModal}
           applicant={selectedApplicant}
-          cvData={selectedCVData}
-          jobMatch={selectedJobMatch}
           onStatusUpdate={handleStatusUpdate}
         />
       )}

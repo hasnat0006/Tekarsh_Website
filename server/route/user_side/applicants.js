@@ -395,7 +395,7 @@ const getAnalysis = async (cvData, jobDescription) => {
                             yearOfExperience: number, // Years of experience calculated from the CV.
                             numOfSkills: number, // Number of skills listed in the CV.
                             strengths: string[], // List of strengths identified in the CV that match the job description.
-                            lackingsArea: string[] // List of areas where the CV lacks skills or experience.
+                            lackingsArea: string[] // List of areas where the CV lacks skills or experience. 
                         }
                         
                         CV Data: ${JSON.stringify(cvData)}

@@ -137,3 +137,111 @@ export interface JobApplicationForm {
   analysisData?: AnalysisData; 
   cvData?: CVData;
 }
+
+
+
+
+
+export interface ApplicantType {
+  applicants_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  cv_link: string;
+  analysis_data: AnalysisData;
+  cv_data: CVDataAdmin;
+  status: string;
+  created_at: string;
+  job_description: JobDescription;
+}
+
+
+
+export interface CVDataAdmin {
+  basicInfo: BasicInfo;
+  socialInfo: SocialInfo;
+  education: Education[];
+  skills: string[];
+  projects: Project[];
+  experience: Experience[];
+  certifications: CertificateType[] | null;
+  achievements: Achievement[];
+  problemSolving: ProblemSolving;
+}
+
+export interface BasicInfo {
+  fullName: string;
+  email: string | null;
+  personalSummary: string | null;
+  phone: string;
+  location: string;
+  topSkills: string[] | null;
+}
+
+export interface CertificateType {
+  title: string;
+  issuingOrganization: string | null;
+  issueDate: string | null;
+  credentialId: string | null;
+  credentialUrl: string | null;
+}
+
+export interface SocialInfo {
+  linkedin: string;
+  github: string;
+  portfolio: string | null;
+}
+
+export interface Education {
+  degree: string;
+  university: string;
+  startYear: string;
+  graduationYear: string;
+}
+
+export interface Project {
+  title: string;
+  description: string;
+  technologies: string[];
+  duration: string;
+  links: string | null;
+}
+
+export interface Experience {
+  company: string;
+  role: string | null;
+  duration: string;
+  responsibilities: string;
+}
+
+export interface Achievement {
+  title: string;
+  description: string | null;
+  date: string;
+}
+
+export interface ProblemSolving {
+  numberOfProblemsSolved: number;
+  onlineJudgeProfiles: string[];
+  notableAchievements: string[];
+}
+
+export interface JobDescription {
+  title: string;
+  department: string;
+  location: string;
+  type: string;
+  experience: string;
+  description: string;
+  responsibilities: string[];
+  requirements: string[];
+  preferred: string[];
+  salary: Salary;
+  benefits: string[];
+}
+
+export interface Salary {
+  min: string;
+  max: string;
+  currency: string;
+}

@@ -1,14 +1,26 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle } from "@/components/ui/modal"
+import * as React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Modal,
+  ModalContent,
+  ModalDescription,
+  ModalHeader,
+  ModalTitle,
+} from "@/components/ui/modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +28,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Mail,
   Phone,
@@ -38,82 +50,92 @@ import {
   Users,
   Clock,
   Target,
-} from "lucide-react"
-import type { ExtractedCVData, JobMatchAnalysis } from "@/lib/ai-service"
+} from "lucide-react";
+import { ApplicantType } from "@/types/interface";
 
 interface ApplicantProfileModalProps {
-  isOpen: boolean
-  onClose: () => void
-  applicant: any
-  cvData: ExtractedCVData
-  jobMatch: JobMatchAnalysis
-  onStatusUpdate?: (applicantId: string, status: string) => void
+  isOpen: boolean;
+  onClose: () => void;
+  applicant: ApplicantType;
+  onStatusUpdate?: (applicantId: string, status: string) => void;
 }
 
 export default function ApplicantProfileModal({
   isOpen,
   onClose,
   applicant,
-  cvData,
-  jobMatch,
   onStatusUpdate,
 }: ApplicantProfileModalProps) {
-  const [activeTab, setActiveTab] = React.useState("overview")
+  const [activeTab, setActiveTab] = React.useState("overview");
 
   // Calculate total experience
   const totalExperience = React.useMemo(() => {
-    return cvData.experience.reduce((total, exp) => {
-      const duration = exp.duration
-      const years = duration.match(/\d{4}/g)
+    if (
+      !applicant.cv_data ||
+      !applicant.cv_data.experience ||
+      !Array.isArray(applicant.cv_data.experience) ||
+      applicant.cv_data.experience.length === 0
+    ) {
+      return 0;
+    }
+    return applicant.cv_data.experience.reduce((total, exp) => {
+      const duration = exp.duration;
+      const years = duration.match(/\d{4}/g);
       if (years && years.length >= 2) {
-        return total + (Number.parseInt(years[1]) - Number.parseInt(years[0]))
-      } else if (years && years.length === 1 && duration.toLowerCase().includes("present")) {
-        const currentYear = new Date().getFullYear()
-        return total + (currentYear - Number.parseInt(years[0]))
+        return total + (Number.parseInt(years[1]) - Number.parseInt(years[0]));
+      } else if (
+        years &&
+        years.length === 1 &&
+        duration.toLowerCase().includes("present")
+      ) {
+        const currentYear = new Date().getFullYear();
+        return total + (currentYear - Number.parseInt(years[0]));
       }
-      return total + 1
-    }, 0)
-  }, [cvData.experience])
+      return total + 1;
+    }, 0);
+  }, [applicant.cv_data.experience]);
 
   // Group skills by category
-  const skillCategories = React.useMemo(() => {
-    return cvData.skills.reduce(
-      (acc, skill) => {
-        if (!acc[skill.category]) {
-          acc[skill.category] = []
-        }
-        acc[skill.category].push(skill)
-        return acc
-      },
-      {} as Record<string, typeof cvData.skills>,
-    )
-  }, [cvData.skills])
+  // const skillCategories = React.useMemo(() => {
+  //   return applicant.cv_data.skills.reduce(
+  //     (acc, skill) => {
+  //       if (!acc[skill.category]) {
+  //         acc[skill.category] = []
+  //       }
+  //       acc[skill.category].push(skill)
+  //       return acc
+  //     },
+  //     {} as Record<string, typeof applicant.cv_data.skills>,
+  //   )
+  // }, [applicant.cv_data.skills])
+
+  console.log("Applicant Profile Modal Rendered", applicant);
 
   const handleStatusChange = (newStatus: string) => {
     if (onStatusUpdate) {
-      onStatusUpdate(applicant.id, newStatus)
+      onStatusUpdate(applicant.applicants_id, newStatus);
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "hired":
-        return "bg-green-100 text-green-800 hover:bg-green-200"
+        return "bg-green-100 text-green-800 hover:bg-green-200";
       case "rejected":
-        return "bg-red-100 text-red-800 hover:bg-red-200"
+        return "bg-red-100 text-red-800 hover:bg-red-200";
       case "interview":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-200"
+        return "bg-blue-100 text-blue-800 hover:bg-blue-200";
       default:
-        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
     }
-  }
+  };
 
   const getMatchScoreColor = (score: number) => {
-    if (score >= 90) return "text-green-600"
-    if (score >= 80) return "text-blue-600"
-    if (score >= 70) return "text-yellow-600"
-    return "text-red-600"
-  }
+    if (score >= 90) return "text-green-600";
+    if (score >= 80) return "text-blue-600";
+    if (score >= 70) return "text-yellow-600";
+    return "text-red-600";
+  };
 
   return (
     <Modal open={isOpen} onOpenChange={onClose}>
@@ -122,10 +144,7 @@ export default function ApplicantProfileModal({
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage
-                  src={applicant.photo || "/placeholder.svg"}
-                  alt={applicant.name}
-                />
+                <AvatarImage src={"/placeholder.svg"} alt={applicant.name} />
                 <AvatarFallback className="text-lg">
                   {applicant.name.charAt(0)}
                 </AvatarFallback>
@@ -135,7 +154,8 @@ export default function ApplicantProfileModal({
                   {applicant.name}
                 </ModalTitle>
                 <ModalDescription className="text-base mt-1">
-                  Applied for {applicant.appliedFor} • {applicant.location}
+                  Applied for {applicant.job_description.title} •{" "}
+                  {applicant.cv_data.basicInfo.location}
                 </ModalDescription>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge className={getStatusColor(applicant.status)}>
@@ -147,7 +167,7 @@ export default function ApplicantProfileModal({
                     className="bg-violet-50 text-violet-700 border-violet-200"
                   >
                     <Star className="h-3 w-3 mr-1" />
-                    {jobMatch.overallMatch}% Match
+                    {applicant.analysis_data.overallMatch}% Match
                   </Badge>
                 </div>
               </div>
@@ -271,7 +291,7 @@ export default function ApplicantProfileModal({
                         <div>
                           <p className="text-sm font-medium">Location</p>
                           <p className="text-sm text-muted-foreground">
-                            {applicant.location}
+                            {applicant.cv_data.basicInfo.location}
                           </p>
                         </div>
                       </div>
@@ -281,7 +301,7 @@ export default function ApplicantProfileModal({
                           <p className="text-sm font-medium">Applied</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(
-                              applicant.appliedDate
+                              applicant.created_at
                             ).toLocaleDateString()}
                           </p>
                         </div>
@@ -290,7 +310,7 @@ export default function ApplicantProfileModal({
                       <Separator />
 
                       <div className="flex gap-2">
-                        {applicant.linkedin && (
+                        {applicant.cv_data.socialInfo.linkedin && (
                           <Button
                             variant="outline"
                             size="icon"
@@ -298,7 +318,7 @@ export default function ApplicantProfileModal({
                             className="h-8 w-8"
                           >
                             <a
-                              href={applicant.linkedin}
+                              href={applicant.cv_data.socialInfo.linkedin}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
@@ -306,7 +326,7 @@ export default function ApplicantProfileModal({
                             </a>
                           </Button>
                         )}
-                        {applicant.github && (
+                        {applicant.cv_data.socialInfo.github && (
                           <Button
                             variant="outline"
                             size="icon"
@@ -314,7 +334,7 @@ export default function ApplicantProfileModal({
                             className="h-8 w-8"
                           >
                             <a
-                              href={applicant.github}
+                              href={applicant.cv_data.socialInfo.github}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
@@ -322,7 +342,7 @@ export default function ApplicantProfileModal({
                             </a>
                           </Button>
                         )}
-                        {applicant.website && (
+                        {applicant.cv_data.socialInfo.portfolio && (
                           <Button
                             variant="outline"
                             size="icon"
@@ -330,7 +350,7 @@ export default function ApplicantProfileModal({
                             className="h-8 w-8"
                           >
                             <a
-                              href={applicant.website}
+                              href={applicant.cv_data.socialInfo.portfolio}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
@@ -355,10 +375,10 @@ export default function ApplicantProfileModal({
                         <div className="text-center">
                           <div
                             className={`text-2xl font-bold ${getMatchScoreColor(
-                              jobMatch.overallMatch
+                              applicant.analysis_data.overallMatch
                             )}`}
                           >
-                            {jobMatch.overallMatch}%
+                            {applicant.analysis_data.overallMatch}%
                           </div>
                           <p className="text-xs text-muted-foreground">
                             Overall Match
@@ -367,10 +387,10 @@ export default function ApplicantProfileModal({
                         <div className="text-center">
                           <div
                             className={`text-2xl font-bold ${getMatchScoreColor(
-                              jobMatch.skillMatch
+                              applicant.analysis_data.skillsMatch
                             )}`}
                           >
-                            {jobMatch.skillMatch}%
+                            {applicant.analysis_data.skillsMatch}%
                           </div>
                           <p className="text-xs text-muted-foreground">
                             Skill Match
@@ -378,7 +398,7 @@ export default function ApplicantProfileModal({
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-blue-600">
-                            {totalExperience}
+                            {applicant.analysis_data.yearOfExperience}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             Years Exp.
@@ -386,7 +406,7 @@ export default function ApplicantProfileModal({
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-purple-600">
-                            {cvData.skills.length}
+                            {applicant.cv_data.skills.length}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             Skills
@@ -401,25 +421,23 @@ export default function ApplicantProfileModal({
                           Professional Summary
                         </h4>
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                          {cvData.summary}
+                          {applicant.cv_data.basicInfo.personalSummary ||
+                            "No summary provided. The candidate's professional summary is currently unavailable."}
                         </p>
                       </div>
 
                       <div>
                         <h4 className="text-sm font-medium mb-2">Top Skills</h4>
                         <div className="flex flex-wrap gap-2">
-                          {cvData.skills
-                            .sort((a, b) => b.level - a.level)
-                            .slice(0, 8)
-                            .map((skill, index) => (
-                              <Badge
-                                key={index}
-                                variant="outline"
-                                className="bg-violet-50 text-violet-700 border-violet-200"
-                              >
-                                {skill.name}
-                              </Badge>
-                            ))}
+                          {applicant.cv_data.skills.map((skill, index) => (
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="bg-violet-50 text-violet-700 border-violet-200"
+                            >
+                              {skill}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
                     </CardContent>
@@ -437,8 +455,8 @@ export default function ApplicantProfileModal({
                         <div>
                           <p className="text-sm font-medium">Education</p>
                           <p className="text-xs text-muted-foreground">
-                            {cvData.education.length > 0
-                              ? `${cvData.education[0].degree}, ${cvData.education[0].institution}`
+                            {applicant.cv_data.education.length > 0
+                              ? `${applicant.cv_data.education[0].degree}, ${applicant.cv_data.education[0].university}`
                               : "No education data"}
                           </p>
                         </div>
@@ -455,8 +473,8 @@ export default function ApplicantProfileModal({
                         <div>
                           <p className="text-sm font-medium">Certifications</p>
                           <p className="text-xs text-muted-foreground">
-                            {cvData.certifications.length} professional
-                            certifications
+                            {applicant.cv_data.certifications?.length}{" "}
+                            professional certifications
                           </p>
                         </div>
                       </div>
@@ -472,7 +490,8 @@ export default function ApplicantProfileModal({
                         <div>
                           <p className="text-sm font-medium">Projects</p>
                           <p className="text-xs text-muted-foreground">
-                            {cvData.projects.length} notable projects
+                            {applicant.cv_data.projects?.length} notable
+                            projects
                           </p>
                         </div>
                       </div>
@@ -490,13 +509,13 @@ export default function ApplicantProfileModal({
                       Professional Experience
                     </CardTitle>
                     <CardDescription className="text-center">
-                      {cvData.experience.length} roles spanning{" "}
+                      {applicant.cv_data.experience?.length} roles spanning{" "}
                       {totalExperience} years
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
-                      {cvData.experience.map((exp, index) => (
+                      {applicant.cv_data.experience?.map((exp, index) => (
                         <div
                           key={index}
                           className="relative pl-6 pb-6 border-l-2 border-muted last:border-l-0"
@@ -505,9 +524,7 @@ export default function ApplicantProfileModal({
                           <div className="space-y-2">
                             <div className="flex items-start justify-between">
                               <div>
-                                <h4 className="font-semibold">
-                                  {exp.position}
-                                </h4>
+                                <h4 className="font-semibold">{exp.role}</h4>
                                 <p className="text-sm text-muted-foreground">
                                   {exp.company}
                                 </p>
@@ -517,23 +534,29 @@ export default function ApplicantProfileModal({
                               </Badge>
                             </div>
                             <p className="text-sm leading-relaxed">
-                              {exp.description}
+                              {exp.responsibilities}
                             </p>
-                            {exp.achievements &&
-                              exp.achievements.length > 0 && (
+                            {applicant.cv_data.achievements &&
+                              applicant.cv_data.achievements?.length > 0 && (
                                 <div>
                                   <p className="text-xs font-medium text-muted-foreground mb-1">
                                     Key Achievements:
                                   </p>
                                   <ul className="text-xs space-y-1">
-                                    {exp.achievements.map(
+                                    {applicant.cv_data.achievements.map(
                                       (achievement, achIndex) => (
                                         <li
                                           key={achIndex}
                                           className="flex items-start gap-2"
                                         >
                                           <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
-                                          <span>{achievement}</span>
+                                          <span>{achievement.title}</span>
+                                          <span className="text-xs text-muted-foreground">
+                                            {achievement.description || ""}
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">
+                                            {achievement.date || "N/A"}
+                                          </span>
                                         </li>
                                       )
                                     )}
@@ -565,11 +588,11 @@ export default function ApplicantProfileModal({
                           <div className="flex justify-between text-sm mb-1">
                             <span>Overall Match</span>
                             <span className="font-medium">
-                              {jobMatch.overallMatch}%
+                              {applicant.analysis_data.overallMatch}%
                             </span>
                           </div>
                           <Progress
-                            value={jobMatch.overallMatch}
+                            value={applicant.analysis_data.overallMatch}
                             className="h-2"
                           />
                         </div>
@@ -577,11 +600,11 @@ export default function ApplicantProfileModal({
                           <div className="flex justify-between text-sm mb-1">
                             <span>Skills Match</span>
                             <span className="font-medium">
-                              {jobMatch.skillMatch}%
+                              {applicant.analysis_data.skillsMatch}%
                             </span>
                           </div>
                           <Progress
-                            value={jobMatch.skillMatch}
+                            value={applicant.analysis_data.skillsMatch}
                             className="h-2"
                           />
                         </div>
@@ -589,26 +612,26 @@ export default function ApplicantProfileModal({
                           <div className="flex justify-between text-sm mb-1">
                             <span>Experience Match</span>
                             <span className="font-medium">
-                              {jobMatch.experienceMatch}%
+                              {applicant.analysis_data.yearOfExperience}%
                             </span>
                           </div>
                           <Progress
-                            value={jobMatch.experienceMatch}
+                            value={applicant.analysis_data.yearOfExperience}
                             className="h-2"
                           />
                         </div>
-                        <div>
+                        {/* <div>
                           <div className="flex justify-between text-sm mb-1">
                             <span>Education Match</span>
                             <span className="font-medium">
-                              {jobMatch.educationMatch}%
+                              {applicant.analysis_data.educationMatch}%
                             </span>
                           </div>
                           <Progress
-                            value={jobMatch.educationMatch}
+                            value={applicant.analysis_data.educationMatch}
                             className="h-2"
                           />
-                        </div>
+                        </div> */}
                       </div>
 
                       <Separator />
@@ -618,7 +641,7 @@ export default function ApplicantProfileModal({
                           Strengths
                         </h4>
                         <ul className="space-y-1">
-                          {jobMatch.strengths
+                          {applicant.analysis_data.strengths
                             .slice(0, 3)
                             .map((strength, index) => (
                               <li
@@ -637,15 +660,17 @@ export default function ApplicantProfileModal({
                           Areas for Consideration
                         </h4>
                         <ul className="space-y-1">
-                          {jobMatch.gaps.slice(0, 2).map((gap, index) => (
-                            <li
-                              key={index}
-                              className="flex items-start gap-2 text-sm"
-                            >
-                              <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                              <span>{gap}</span>
-                            </li>
-                          ))}
+                          {applicant.analysis_data.lackingsArea
+                            .slice(0, 2)
+                            .map((gap, index) => (
+                              <li
+                                key={index}
+                                className="flex items-start gap-2 text-sm"
+                              >
+                                <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                                <span>{gap}</span>
+                              </li>
+                            ))}
                         </ul>
                       </div>
                     </CardContent>
@@ -660,7 +685,7 @@ export default function ApplicantProfileModal({
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {Object.entries(skillCategories).map(
+                      {/* {Object.entries(skillCategories).map(
                         ([category, skills]) => (
                           <div key={category}>
                             <h4 className="text-sm font-medium capitalize mb-2">
@@ -687,7 +712,7 @@ export default function ApplicantProfileModal({
                             </div>
                           </div>
                         )
-                      )}
+                      )} */}
                     </CardContent>
                   </Card>
                 </div>
@@ -706,20 +731,20 @@ export default function ApplicantProfileModal({
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4 max-h-48 overflow-y-auto">
-                        {cvData.education.map((edu, index) => (
+                        {applicant.cv_data.education.map((edu, index) => (
                           <div
                             key={index}
                             className="border-l-2 border-muted pl-4"
                           >
                             <h4 className="font-medium">{edu.degree}</h4>
                             <p className="text-sm text-muted-foreground">
-                              {edu.institution}
+                              {edu.university}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {edu.year}
+                              {edu.startYear} - {edu.graduationYear}
                             </p>
-                            {edu.achievements && (
-                              <p className="text-sm mt-1">{edu.achievements}</p>
+                            {edu.degree && (
+                              <p className="text-sm mt-1">{edu.degree}</p>
                             )}
                           </div>
                         ))}
@@ -737,20 +762,26 @@ export default function ApplicantProfileModal({
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4 max-h-48 overflow-y-auto">
-                        {cvData.certifications.map((cert, index) => (
-                          <div
-                            key={index}
-                            className="border-l-2 border-muted pl-4"
-                          >
-                            <h4 className="font-medium">{cert.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {cert.issuer}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {cert.year}
-                            </p>
-                          </div>
-                        ))}
+                        {applicant.cv_data.certifications?.map(
+                          (cert, index) => (
+                            <div
+                              key={index}
+                              className="border-l-2 border-muted pl-4"
+                            >
+                              <h4 className="font-medium">{cert.title}</h4>
+                              {cert.issuingOrganization && (
+                                <p className="text-sm text-muted-foreground">
+                                  {cert.issuingOrganization}
+                                </p>
+                              )}
+                              {cert.issueDate && (
+                                <p className="text-sm text-muted-foreground">
+                                  Issued: {cert.issueDate}
+                                </p>
+                              )}
+                            </div>
+                          )
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -766,11 +797,14 @@ export default function ApplicantProfileModal({
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-48">
-                      {cvData.projects.map((project, index) => (
-                        <div key={index} className="border-2 border-[var(--word)]/5 rounded-lg p-4">
+                      {applicant.cv_data.projects.map((project, index) => (
+                        <div
+                          key={index}
+                          className="border-2 border-[var(--word)]/5 rounded-lg p-4"
+                        >
                           <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-medium">{project.name}</h4>
-                            {project.url && (
+                            <h4 className="font-medium">{project.title}</h4>
+                            {project.links && (
                               <Button
                                 // variant="ghost"
                                 size="icon"
@@ -778,7 +812,7 @@ export default function ApplicantProfileModal({
                                 className="h-8 w-8 bg-blue-50 hover:bg-blue-100 text-blue-500 hover:text-blue-700"
                               >
                                 <a
-                                  href={project.url}
+                                  href={project.links || "#"}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
@@ -802,26 +836,6 @@ export default function ApplicantProfileModal({
                             ))}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Languages */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Languages</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {cvData.languages.map((language, index) => (
-                        <Badge
-                          key={index}
-                          variant="outline"
-                          className="bg-blue-50 text-blue-700 border-blue-200"
-                        >
-                          {language.name} - {language.proficiency}
-                        </Badge>
                       ))}
                     </div>
                   </CardContent>
