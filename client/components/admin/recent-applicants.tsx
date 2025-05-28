@@ -4,146 +4,55 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { extractCVData, analyzeJobMatch } from "@/lib/ai-service";
+import { useEffect, useState } from "react";
 import type { ExtractedCVData, JobMatchAnalysis } from "@/lib/ai-service";
-import { jobRequirements, mockCVData, applicantsData } from "../resources/cv-data";
+
 import ApplicantProfileModal from "./applicant-profile-modal";
-// Mock data for recent applicants
-const recentApplicants = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@example.com",
-    appliedFor: "Senior Frontend Developer",
-    appliedDate: "2023-05-15T10:30:00Z",
-    status: "interview",
-    aiScore: 88,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "2",
-    name: "Michael Chen",
-    email: "michael.chen@example.com",
-    appliedFor: "UX/UI Designer",
-    appliedDate: "2023-05-10T14:45:00Z",
-    status: "review",
-    aiScore: 92,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "3",
-    name: "Emily Rodriguez",
-    email: "emily.rodriguez@example.com",
-    appliedFor: "Backend Engineer",
-    appliedDate: "2023-05-08T09:15:00Z",
-    status: "hired",
-    aiScore: 95,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "4",
-    name: "David Kim",
-    email: "david.kim@example.com",
-    appliedFor: "Product Manager",
-    appliedDate: "2023-05-05T16:20:00Z",
-    status: "rejected",
-    aiScore: 72,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "5",
-    name: "Lisa Wang",
-    email: "lisa.wang@example.com",
-    appliedFor: "DevOps Engineer",
-    appliedDate: "2023-05-03T11:10:00Z",
-    status: "review",
-    aiScore: 85,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@example.com",
-    appliedFor: "Senior Frontend Developer",
-    appliedDate: "2023-05-15T10:30:00Z",
-    status: "interview",
-    aiScore: 88,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "2",
-    name: "Michael Chen",
-    email: "michael.chen@example.com",
-    appliedFor: "UX/UI Designer",
-    appliedDate: "2023-05-10T14:45:00Z",
-    status: "review",
-    aiScore: 92,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "3",
-    name: "Emily Rodriguez",
-    email: "emily.rodriguez@example.com",
-    appliedFor: "Backend Engineer",
-    appliedDate: "2023-05-08T09:15:00Z",
-    status: "hired",
-    aiScore: 95,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "4",
-    name: "David Kim",
-    email: "david.kim@example.com",
-    appliedFor: "Product Manager",
-    appliedDate: "2023-05-05T16:20:00Z",
-    status: "rejected",
-    aiScore: 72,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "5",
-    name: "Lisa Wang",
-    email: "lisa.wang@example.com",
-    appliedFor: "DevOps Engineer",
-    appliedDate: "2023-05-03T11:10:00Z",
-    status: "review",
-    aiScore: 85,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-];
+
+
+import { ApplicantType } from "@/types/interface";
+
+const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function RecentApplicants() {
-  const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(
-    null
-  );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
+  const [selectedApplicant, setSelectedApplicant] =
+    useState<ApplicantType | null>(null);
   const [selectedCVData, setSelectedCVData] = useState<ExtractedCVData | null>(
     null
   );
+
+  const [recentApplicants, setRecentApplicants] = useState<ApplicantType[]>([]);
+
   const [selectedJobMatch, setSelectedJobMatch] =
     useState<JobMatchAnalysis | null>(null);
-  const [applicants, setApplicants] = useState(applicantsData);
 
-  const handleViewApplicant = async (applicant: any) => {
-    try {
-      // Get mock CV data for this applicant
-      const cvText = mockCVData[applicant.id] || mockCVData["1"];
+  useEffect(() => {
+    const fetchApplicants = async () => {
+      // Simulate fetching applicants from an API
+      try {
+        const response = await fetch(`${url}/get-applicants`);
+        const data = await response.json();
+        if (!data.ok) {
+          throw new Error(data.message || "Failed to fetch applicants");
+        }
+        console.log("Fetched applicants:", data);
+        data.applicants.slice(0, 10); // Limit to 10 recent applicants
+        setRecentApplicants(data.applicants);
+      } catch (error) {
+        console.error("Error fetching applicants:", error);
+      }
+    };
+    fetchApplicants();
+  }, []);
 
-      // Extract CV data using AI
-      const cvData = await extractCVData(cvText);
+  useEffect(() => {
+    console.log("Recent applicants updated:", recentApplicants);
+  }, [recentApplicants]);
 
-      // Analyze job match
-      const jobMatch = await analyzeJobMatch(cvData, jobRequirements);
-
-      setSelectedApplicant(applicant);
-      setSelectedCVData(cvData);
-      setSelectedJobMatch(jobMatch);
-      setIsModalOpen(true);
-    } catch (error) {
-      console.error("Error processing applicant data:", error);
-    }
+  const handleViewApplicant = async (applicant: ApplicantType) => {
+    setSelectedApplicant(applicant);
+    setIsModalOpen(true);
   };
   const handleStatusUpdate = (applicantId: string, newStatus: string) => {
     setApplicants((prev) =>
@@ -160,6 +69,12 @@ export default function RecentApplicants() {
     }
   };
 
+
+  useEffect(() => {
+    console.log("Selected applicant:", selectedApplicant);
+  }, [selectedApplicant]);
+
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedApplicant(null);
@@ -172,7 +87,7 @@ export default function RecentApplicants() {
         <div className="space-y-4">
           {recentApplicants.map((applicant) => (
             <div
-              key={applicant.id}
+              key={applicant.applicants_id}
               className="flex items-center justify-between"
             >
               <div className="flex items-center gap-4">
@@ -183,16 +98,13 @@ export default function RecentApplicants() {
                       .padStart(6, "0")}33`,
                   }}
                 >
-                  <AvatarImage
-                    src={applicant.avatar || "/placeholder.svg"}
-                    alt={applicant.name}
-                  />
+                  <AvatarImage src={"/placeholder.svg"} alt={applicant.name} />
                   <AvatarFallback>{applicant.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium">{applicant.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {applicant.appliedFor}
+                    {applicant.job_description.title}
                   </p>
                 </div>
               </div>
@@ -221,13 +133,11 @@ export default function RecentApplicants() {
               </div>
             </div>
           ))}
-          {selectedApplicant && selectedCVData && selectedJobMatch && (
+          {selectedApplicant &&  (
             <ApplicantProfileModal
               isOpen={isModalOpen}
               onClose={closeModal}
               applicant={selectedApplicant}
-              cvData={selectedCVData}
-              jobMatch={selectedJobMatch}
               onStatusUpdate={handleStatusUpdate}
             />
           )}

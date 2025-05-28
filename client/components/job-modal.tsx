@@ -34,16 +34,6 @@ import {
   Upload,
 } from "lucide-react";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/auth";
@@ -200,6 +190,7 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
             duration: 10000,
           }
         );
+        return;
       } else {
         toast.success(
           `Your CV matches ${analysisResult.analysis.overallMatch}% with this job.`,

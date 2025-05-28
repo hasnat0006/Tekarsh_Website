@@ -227,17 +227,19 @@ export interface ProblemSolving {
 }
 
 export interface JobDescription {
+  job_id: string;
+  status?: boolean;
   title: string;
   department: string;
   location: string;
   type: string;
   experience: string;
   description: string;
-  responsibilities: string[];
-  requirements: string[];
-  preferred: string[];
-  salary: Salary;
-  benefits: string[];
+  responsibilities?: string[];
+  requirements?: string[];
+  preferred?: string[];
+  salary?: Salary;
+  benefits?: string[];
 }
 
 export interface Salary {

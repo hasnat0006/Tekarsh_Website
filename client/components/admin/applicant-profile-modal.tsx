@@ -68,6 +68,8 @@ export default function ApplicantProfileModal({
 }: ApplicantProfileModalProps) {
   const [activeTab, setActiveTab] = React.useState("overview");
 
+  console.log("Applicant Profile Modal Props:", applicant);
+
   // Calculate total experience
   const totalExperience = React.useMemo(() => {
     if (

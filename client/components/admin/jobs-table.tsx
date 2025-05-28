@@ -174,7 +174,7 @@ export default function JobsTable() {
       job.description.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.description.location.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = statusFilter === "all" || job.status === statusFilter;
+    const matchesStatus = statusFilter === "all" || job.status === true ? "active" : "inactive" === statusFilter;
     const matchesDepartment =
       departmentFilter === "all" ||
       job.description.department === departmentFilter;
@@ -434,8 +434,8 @@ export default function JobsTable() {
                   <TableCell className="text-right">
                     <div className="flex justify-end items-center gap-2">
                       <Badge
-                        variant="outline"
-                        className="bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
+                        // variant="outline"
+                        className="bg-green-50 cursor-pointer text-green-700 hover:bg-green-100 border-green-200"
                         onClick={() => handleViewJobApplicants(job)}
                       >
                         <span>View</span>
@@ -570,16 +570,13 @@ export default function JobsTable() {
         initialData={editingJob}
         mode="edit"
       />
+
+
       {selectedJob && (
         <JobApplicantsModal
           isOpen={isJobApplicantsModalOpen}
           onClose={closeJobApplicantsModal}
           job={selectedJob}
-          applicants={mockJobApplicants[selectedJob.id] || "1"}
-          onApplicantStatusUpdate={(applicantId, status) => {
-            // Update applicant status in mock data
-            console.log(`Updated applicant ${applicantId} status to ${status}`);
-          }}
         />
       )}
     </div>
