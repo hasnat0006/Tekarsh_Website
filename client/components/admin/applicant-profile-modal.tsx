@@ -169,6 +169,14 @@ export default function ApplicantProfileModal({
                     <Star className="h-3 w-3 mr-1" />
                     {applicant.analysis_data.overallMatch}% Match
                   </Badge>
+                  {/* <Button
+                    variant="link"
+                    size="icon"
+                    className="text-blue-600 ml-4 hover:text-blue-800"
+                    onClick={() => setViewCV(!viewCV)}
+                  >
+                    {viewCV ? "Hide CV" : "View CV"}
+                  </Button> */}
                 </div>
               </div>
             </div>
@@ -796,7 +804,7 @@ export default function ApplicantProfileModal({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-48">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-48 overflow-y-auto">
                       {applicant.cv_data.projects.map((project, index) => (
                         <div
                           key={index}

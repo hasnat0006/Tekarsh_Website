@@ -69,7 +69,7 @@ export interface AnalysisData {
   yearOfExperience: number;
   numOfSkills: number;
   strengths: string[];
-  lackingsArea: string[];
+  lackingsArea?: string[];
 }
 
 
@@ -161,69 +161,69 @@ export interface CVDataAdmin {
   basicInfo: BasicInfo;
   socialInfo: SocialInfo;
   education: Education[];
-  skills: string[];
-  projects: Project[];
-  experience: Experience[];
-  certifications: CertificateType[] | null;
-  achievements: Achievement[];
-  problemSolving: ProblemSolving;
+  skills?: string[];
+  projects?: Project[];
+  experience?: Experience[];
+  certifications?: CertificateType[] | null;
+  achievements?: Achievement[];
+  problemSolving?: ProblemSolving;
 }
 
 export interface BasicInfo {
   fullName: string;
-  email: string | null;
-  personalSummary: string | null;
+  email?: string | null;
+  personalSummary?: string | null;
   phone: string;
   location: string;
-  topSkills: string[] | null;
+  topSkills?: string[] | null;
 }
 
 export interface CertificateType {
   title: string;
-  issuingOrganization: string | null;
-  issueDate: string | null;
-  credentialId: string | null;
-  credentialUrl: string | null;
+  issuingOrganization?: string | null;
+  issueDate?: string | null;
+  credentialId?: string | null;
+  credentialUrl?: string | null;
 }
 
 export interface SocialInfo {
-  linkedin: string;
-  github: string;
-  portfolio: string | null;
+  linkedin?: string;
+  github?: string;
+  portfolio?: string | null;
 }
 
 export interface Education {
   degree: string;
   university: string;
-  startYear: string;
-  graduationYear: string;
+  startYear?: string;
+  graduationYear?: string;
 }
 
 export interface Project {
   title: string;
   description: string;
   technologies: string[];
-  duration: string;
-  links: string | null;
+  duration?: string | null;
+  links?: string | null;
 }
 
 export interface Experience {
   company: string;
   role: string | null;
-  duration: string;
-  responsibilities: string;
+  duration?: string | null;
+  responsibilities?: string | null;
 }
 
 export interface Achievement {
   title: string;
-  description: string | null;
-  date: string;
+  description?: string | null;
+  date?: string;
 }
 
 export interface ProblemSolving {
   numberOfProblemsSolved: number;
-  onlineJudgeProfiles: string[];
-  notableAchievements: string[];
+  onlineJudgeProfiles?: string[];
+  notableAchievements?: string[];
 }
 
 export interface JobDescription {

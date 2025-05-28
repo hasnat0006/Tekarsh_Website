@@ -49,7 +49,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/auth";
 import toast, { Toaster } from "react-hot-toast";
 
-import { Job, AnalysisData } from "@/types/interface";
+import { Job, AnalysisData, CVDataAdmin } from "@/types/interface";
 
 const backendUrl =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
@@ -70,10 +70,10 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
     resume: null as File | null,
     cvUrl: "",
     coverLetter: "",
-    job_id: job.job_id,
-    analysisData: {},
-    cvData: {},
   });
+
+  const [anaData, setAnaData] = useState<AnalysisData | null>(null);
+  const [cvData, setCVData] = useState<CVDataAdmin | null>(null);
 
   // Ensure job_id updates when job changes
   useEffect(() => {
@@ -121,7 +121,11 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
           }));
           toast.success("CV uploaded successfully!");
         }
+      })
+      .finally(() => {
+        console.log("CV upload process completed.");
       });
+    return formData.cvUrl;
   };
 
   const handleCVAnalysis = async () => {
@@ -142,95 +146,86 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
         }),
       });
 
-      if (!response.ok) {
-        toast.error("CV analysis failed!");
+      const data = await response.json();
+
+      if (!data) {
+        toast.error("CV analysis failed!!");
         return;
       }
 
-      const data = await response.json();
       console.log("CV Analysis Result:", data);
+      setAnaData(data.analysis);
+      setCVData(data.cvData);
       toast.success("CV analysis complete!");
       console.log("CV Analysis Data:", data.analysis);
-
-      if (data.analysis.overallMatch < 30 && data.analysis.skillsMatch < 30) {
-        toast.error(
-          "Your CV does not meet the minimum requirements for this job.",
-          {
-            duration: 10000,
-          }
-        );
-        return;
-      } else {
-        toast.success(
-          `Your CV matches ${data.analysis.overallMatch}% with this job.`,
-          {
-            duration: 5000,
-          }
-        );
-      }
-
-
-    
-
-      // // add data in formData like data:data
-      // After getting the analysis result
-      setFormData((prev) => {
-        const updated = {
-          ...prev,
-          job_id: job.job_id,
-          analysisData: data.analysis,
-          cvData: data.cvData,
-        };
-
-
-        // If you need to use it right away, do it here
-        console.log("Updated formData:", updated);
-        return updated;
-      });
-
-      setFormData((prev) => ({
-        ...prev,
-        job_id: job.job_id,
-        analysisData: data.analysis,
-        cvData: data.cvData,
-      }));
-
-      // setAnaData(data.analysis);
-      // setCVData(data.cvData);
+      return data;
     } catch (error) {
       toast.error("There was an error analyzing your CV.");
     }
   };
 
-  useEffect(() => {
-    console.log("Form Data from effect:", formData);
-  }, [formData]);
+  // useEffect(() => {
+  //   console.log("Form Data from effect:", formData);
+  // }, [formData]);
 
   const [isCVUploading, setIsCVUploading] = useState(false);
   const [isAnalysis, setIsAnalysis] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    // setIsSubmitting(true);
 
     // upload resume to Supabase storage
     if (formData.resume) {
       console.log("Uploading CV:", formData.resume.name);
 
       setIsCVUploading(true);
-      await handleCVUpload();
+      const uurl = await handleCVUpload();
       setIsCVUploading(false);
-      console.log("CV uploaded successfully:", formData.cvUrl);
+      console.log("CV uploaded successfully:", uurl);
       // If CV analysis is enabled, call the analysis function
 
       console.log("Starting CV analysis...");
       setIsAnalysis(true);
-      await handleCVAnalysis();
+      const analysisResult = await handleCVAnalysis();
       setIsAnalysis(false);
-      // Prepare the application data
 
-      if(!formData.analysisData || !formData.cvData) {
-        toast.error("Please try again!!");
+      if (
+        analysisResult.analysis.overallMatch < 30 &&
+        analysisResult.analysis.skillsMatch < 30
+      ) {
+        toast.error(
+          "Your CV does not meet the minimum requirements for this job.",
+          {
+            duration: 10000,
+          }
+        );
+      } else {
+        toast.success(
+          `Your CV matches ${analysisResult.analysis.overallMatch}% with this job.`,
+          {
+            duration: 5000,
+          }
+        );
+      }
+
+      console.log("Submitting application with data:", {
+        jobId: job.job_id,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        resume: formData.cvUrl,
+        coverLetter: formData.coverLetter,
+        analysisData: anaData,
+        cvData: cvData,
+      });
+
+      if (
+        !analysisResult ||
+        !analysisResult.analysis ||
+        !analysisResult.cvData
+      ) {
+        toast.error("CV analysis failed. Please try again.");
         setIsSubmitting(false);
         return;
       }
@@ -241,20 +236,18 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          formData,
+          ...formData,
+          cvData: cvData || analysisResult.cvData,
+          analysisData: anaData || analysisResult.analysis,
         }),
       });
-      if (!response.ok) {
-        const errorData = await response.json();
+      const data = await response.json();
+      if (!data.ok) {
         toast.error(
-          `Application submission failed: ${
-            errorData.message || "Unknown error"
-          }`
+          `Application submission failed: ${data.message || "Unknown error"}`
         );
-        console.error("Error submitting application:", errorData);
-        // Optionally, you can set some state to indicate the error
+        console.error("Error submitting application:", data);
       } else {
-        const data = await response.json();
         console.log("Application submitted successfully:", data);
         toast.success("Application submitted successfully!");
       }
@@ -264,6 +257,7 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
     } else {
       setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   };
 
   const shareJob = () => {

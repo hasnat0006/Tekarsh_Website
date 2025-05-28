@@ -75,10 +75,10 @@ export default function CareersPage() {
               className="absolute -right-10 top-5 rounded-lg object-cover"
             />
             <Image
-              src="/landing-hero.svg"
+              src="/team5.jpg"
               alt="Developers working"
-              width={500}
-              height={300}
+              width={550}
+              height={350}
               className="absolute -right-0 top-20 rounded-lg object-cover"
             />
           </div>
@@ -229,7 +229,7 @@ export default function CareersPage() {
               <div className="lg:w-1/2">
                 <div className="relative rounded-xl overflow-hidden">
                   <Image
-                    src="/team.webp?height=600&width=800"
+                    src="/team3.jpg?height=600&width=800"
                     alt="Team collaboration"
                     width={800}
                     height={600}

@@ -68,6 +68,9 @@ export default function ApplicantsTable() {
   const [selectedJobMatch, setSelectedJobMatch] =
     useState<JobMatchAnalysis | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const [viewCV, setViewCV] = useState(false);
+  const [cv_link, setCVLink] = useState("");
   const [paginatedApplicants, setPaginatedApplicants] = useState<
     ApplicantType[]
   >([]);
@@ -332,15 +335,17 @@ export default function ApplicantsTable() {
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {Array.isArray(applicant.cv_data?.skills) &&
-                        applicant.cv_data.skills.slice(0, 5).map((skill, idx) => (
-                          <Badge
-                            key={idx}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {skill}
-                          </Badge>
-                        ))}
+                        applicant.cv_data.skills
+                          .slice(0, 5)
+                          .map((skill, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {skill}
+                            </Badge>
+                          ))}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -408,8 +413,13 @@ export default function ApplicantsTable() {
                         <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
                           Send Email
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                          Download Resume
+                        <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            setViewCV(true);
+                            setCVLink(applicant.cv_link);
+                          }}
+                        >
+                          View CV
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -487,6 +497,31 @@ export default function ApplicantsTable() {
           applicant={selectedApplicant}
           onStatusUpdate={handleStatusUpdate}
         />
+      )}
+
+      {viewCV && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-[9999] bg-black/60 "
+          style={{ top: 0, left: 0 }}
+        >
+          <div
+            className="relative w-4/5 h-4/5 border border-green-200 rounded-lg overflow-hidden overflow-y-scroll bg-gray-50 shadow-2xl"
+          >
+            <button
+              className="absolute top-2 right-2 z-50 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+              onClick={() => setViewCV(false)}
+              aria-label="Close CV"
+            >
+              ✕
+            </button>
+            <iframe
+              src={`https://xihchmdjcsdzvfoujipk.supabase.co/storage/v1/object/public/cv//${cv_link}`}
+              className="w-full h-full"
+              title="CV Preview"
+              frameBorder="0"
+            />
+          </div>
+        </div>
       )}
     </div>
   );

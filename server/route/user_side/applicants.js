@@ -49,14 +49,14 @@ const schema = z.object({
         responsibilities: z.string().optional().nullable().describe("Responsibilities held by the applicant in the company."),
     })).optional().nullable(),
     certifications: z.array(z.object({
-        title: z.string().describe("Title of the certification."),
+        title: z.string().nullable().optional().describe("Title of the certification."),
         issuingOrganization: z.string().optional().nullable().describe("Issuing organization of the certification."),
         issueDate: z.string().optional().nullable().describe("Issue date of the certification."),
         credentialId: z.string().optional().nullable().describe("Credential ID of the certification."),
         credentialUrl: z.string().optional().nullable().describe("Credential URL of the certification.")
     })).optional().nullable(),
     achievements: z.array(z.object({
-        title: z.string().describe("Title of the achievement."),
+        title: z.string().nullable().optional().describe("Title of the achievement."),
         description: z.string().nullable().optional().describe("Description of the achievement."),
         date: z.string().optional().nullable().describe("Date of the achievement.")
     })).optional().nullable(),
@@ -261,6 +261,7 @@ const fetchCVData = async (filename) => {
         return null; // Return null if filename is not provided
     }
     let base64Data;
+    console.log("--------------------------------------------------------");
     try {
         base64Data = await getBase64FromPdf(filename);
         console.log("Base64 data length:", base64Data.length);
@@ -269,7 +270,7 @@ const fetchCVData = async (filename) => {
         return null; // Return null if fetching fails
     }
 
-    console.log("Describing schema:", schema.describe());
+    // console.log("Describing schema:", schema.describe());
 
     // Proper structure for Gemini API
     const contents = [
@@ -364,19 +365,21 @@ const fetchCVData = async (filename) => {
         } catch (parseError) {
             return null; // Return null if parsing fails
         }
-
-        try {
-            console.log("Validating summary against schema...");
-            console.log("Summary JSON:", summaryJson);
-            const parsed = schema.safeParse(summaryJson);
-            if (!parsed.success) {
-                return null; // Return null if validation fails
-            }
-            return parsed.data; // Return the validated data
-        } catch (zodError) {
-            console.error('Zod validation error:', zodError);
-            return null; // Return null if validation fails
-        }
+        return summaryJson; // Return the JSON object directly
+        // try {
+        //     console.log("Validating summary against schema...");
+        //     console.log("Summary JSON:", summaryJson);
+        //     const parsed = schema.safeParse(summaryJson);
+        //     console.log("Parsed data:", parsed);
+        //     if (!parsed.success) {
+        //         console.error('Zod validation error:', parsed.error);
+        //         return null; // Return null if validation fails
+        //     }
+        //     return parsed.data; // Return the validated data
+        // } catch (zodError) {
+        //     console.error('Zod validation error:', zodError);
+        //     return null; // Return null if validation fails
+        // }
     } catch (err) {
         console.error('Error generating summary:', err);
         return null; // Return null if an error occurs
@@ -429,18 +432,21 @@ const getAnalysis = async (cvData, jobDescription) => {
             return null; // Return null if parsing fails
         }
 
-        try {
-            console.log("Validating analysis against schema...");
-            const parsed = analysisSchema.safeParse(analysisJson);
-            if (!parsed.success) {
-                console.error('Zod validation error:', parsed.error);
-                return null; // Return null if validation fails
-            }
-            return parsed.data;
-        } catch (zodError) {
-            console.error('Zod validation error:', zodError);
-            return null; // Return null if validation fails
-        }
+        return analysisJson; // Return the JSON object directly
+
+        // try {
+        //     console.log("Validating analysis against schema...");
+        //     const parsed = analysisSchema.safeParse(analysisJson);
+        //     if (!parsed.success) {
+        //         console.error('Zod validation error:', parsed.error);
+        //         return null; // Return null if validation fails
+        //     }
+        //     console.log("Analysis validated successfully:", parsed.data);
+        //     return parsed.data;
+        // } catch (zodError) {
+        //     console.error('Zod validation error:', zodError);
+        //     return null; // Return null if validation fails
+        // }
     } catch (err) {
         console.error('Error generating analysis:', err);
         return null; // Return null if an error occurs
@@ -520,11 +526,13 @@ router.post('/analyze-cv', async (req, res) => {
 
 router.post("/apply-job", async (req, res) => {
     const {
-        job_id, name, email, phone, cvUrl, coverLetter, analysisData, cvData
-    } = req.body.formData;
+        job_id, name, email, phone, cvUrl, coverLetter
+    } = req.body;
+    const analysisData = req.body.analysisData;
+    const cvData = req.body.cvData;
     console.log("Received job application data:", req.body);
-    if (!job_id || !name || !email || !phone || !cvUrl) {
-        console.log('Missing required fields in job application data:', job_id, name, email, phone, cvUrl);
+    if (!job_id || !name || !email || !phone || !cvUrl || !analysisData || !cvData) {
+        console.log('Missing required fields in job application data:', job_id, name, email, phone, cvUrl, analysisData, cvData);
 
         return res.status(400).json({ error: 'All fields are required', ok: false });
     }
