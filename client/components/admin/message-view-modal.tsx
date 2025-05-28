@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/components/ui/use-toast";
+import toast, { Toaster } from "react-hot-toast";
 import {
   Modal,
   ModalContent,
@@ -20,7 +20,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Mail,
   Phone,
-  Calendar,
   ArrowUpRight,
   Archive,
   Flag,
@@ -35,18 +34,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-interface Message {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  subject: string;
-  message: string;
-  status: "unread" | "read" | "archived";
-  createdAt: string;
-  priority?: "low" | "normal" | "high";
-  category?: string;
-}
+import { Message } from "@/types/interface";
 
 interface MessageViewModalProps {
   isOpen: boolean;
@@ -67,9 +55,7 @@ export default function MessageViewModal({
   const [replyContent, setReplyContent] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [replyError, setReplyError] = useState("");
-  const { toast } = useToast();
 
-  // Reset state when modal opens/closes
   React.useEffect(() => {
     if (isOpen && message) {
       setShowReplyBox(false);
@@ -80,10 +66,10 @@ export default function MessageViewModal({
 
   // Add a separate useEffect to handle marking as read only once when modal opens
   React.useEffect(() => {
-    if (isOpen && message && message.status === "unread") {
+    if (isOpen && message && message.status === "unseen") {
       // Use a timeout to avoid the infinite loop by deferring the state update
       const timeoutId = setTimeout(() => {
-        onStatusUpdate(message.id, "read");
+        onStatusUpdate(message.id, "seen");
       }, 0);
 
       return () => clearTimeout(timeoutId);
@@ -93,7 +79,6 @@ export default function MessageViewModal({
   const handleInstantReply = () => {
     setShowReplyBox(true);
     setReplyError("");
-    // Focus on the textarea after it renders
     setTimeout(() => {
       const textarea = document.getElementById("reply-textarea");
       if (textarea) {
@@ -110,8 +95,6 @@ export default function MessageViewModal({
 
   const handleSendReply = async () => {
     if (!message) return;
-
-    // Validate reply content
     if (!replyContent.trim()) {
       setReplyError("Please enter a reply message");
       return;
@@ -128,10 +111,7 @@ export default function MessageViewModal({
     try {
       await onReply(message.id, replyContent.trim());
 
-      toast({
-        title: "Reply Sent",
-        description: `Your reply has been sent to ${message.name}`,
-      });
+      toast.success("Reply sent successfully!");
 
       // Close reply box and modal
       setShowReplyBox(false);
@@ -139,11 +119,8 @@ export default function MessageViewModal({
       onClose();
     } catch (error) {
       setReplyError("Failed to send reply. Please try again.");
-      toast({
-        title: "Error",
-        description: "Failed to send reply. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to send reply. Please try again.");
+    
     } finally {
       setIsSending(false);
     }
@@ -152,26 +129,24 @@ export default function MessageViewModal({
   const handleMarkAsArchived = () => {
     if (!message) return;
     onStatusUpdate(message.id, "archived");
-    toast({
-      title: "Message Archived",
-      description: "The message has been moved to archived.",
-    });
+    toast.success("Message archived successfully!");
+    setShowReplyBox(false);
+    setReplyContent("");
+    setReplyError("");
+    onClose();
   };
 
   const handleMarkAsUnread = () => {
     if (!message) return;
-    onStatusUpdate(message.id, "unread");
-    toast({
-      title: "Marked as Unread",
-      description: "The message has been marked as unread.",
-    });
+    onStatusUpdate(message.id, "unseen");
+    toast.success("Message marked as unread successfully!");
   };
 
   const getStatusIcon = (status: Message["status"]) => {
     switch (status) {
-      case "unread":
+      case "unseen":
         return <Clock className="h-4 w-4" />;
-      case "read":
+      case "seen":
         return <CheckCircle className="h-4 w-4" />;
       case "archived":
         return <Archive className="h-4 w-4" />;
@@ -182,9 +157,9 @@ export default function MessageViewModal({
 
   const getStatusColor = (status: Message["status"]) => {
     switch (status) {
-      case "unread":
+      case "unseen":
         return "bg-blue-100 text-blue-800 hover:bg-blue-200";
-      case "read":
+      case "seen":
         return "bg-green-100 text-green-800 hover:bg-green-200";
       case "archived":
         return "bg-gray-100 text-gray-800 hover:bg-gray-200";
@@ -193,23 +168,11 @@ export default function MessageViewModal({
     }
   };
 
-  const getPriorityColor = (priority?: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "normal":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "low":
-        return "bg-gray-100 text-gray-800 border-gray-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
   if (!message) return null;
 
   return (
     <Modal open={isOpen} onOpenChange={onClose}>
+      <Toaster position="top-right" reverseOrder={false} />
       <ModalContent className="max-w-4xl max-h-[90vh] font-poppins">
         <ModalHeader>
           <div className="flex items-start justify-between">
@@ -225,8 +188,8 @@ export default function MessageViewModal({
               </div>
               <ModalDescription className="mt-1 text-start">
                 Message from {message.name} •{" "}
-                {new Date(message.createdAt).toLocaleDateString()} at{" "}
-                {new Date(message.createdAt).toLocaleTimeString()}
+                {new Date(message.created_at).toLocaleDateString()} at{" "}
+                {new Date(message.created_at).toLocaleTimeString()}
               </ModalDescription>
             </div>
           </div>
@@ -283,7 +246,7 @@ export default function MessageViewModal({
             <CardContent className="p-6">
               <div className="prose max-w-none">
                 <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {message.message}
+                  {message.description}
                 </div>
               </div>
             </CardContent>
@@ -381,14 +344,14 @@ export default function MessageViewModal({
                   Archive
                 </Button>
               )}
-              {message.status === "read" && (
+              {message.status === "seen" && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleMarkAsUnread}
                 >
                   <Flag className="h-4 w-4 mr-1" />
-                  Mark Unread
+                  Mark Unseen
                 </Button>
               )}
             </div>

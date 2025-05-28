@@ -1,0 +1,36 @@
+const express = require("express");
+const sql = require("../../connection/db");
+const router = express.Router();
+
+
+router.get("/get-applicants", async (req, res) => {
+    const id = req.query.id;
+    console.log("Received job ID:", id);
+    if (!id) {
+        return res.status(400).json({ error: "Job ID is required", ok: false });
+    }
+    try {
+        const applicants = await sql`
+            SELECT a.applicants_id, a.name, a.email, a.phone, a.cv_link, a.analysis_data, a.cv_data, j.description AS job_description
+            FROM applicants AS a
+            JOIN job_post AS j ON a.job_id = j.job_id
+        `;
+        console.log("Fetched applicants:", applicants);
+        res.status(200).json(applicants);
+    } catch (error) {
+        console.error("Error fetching applicants:", error);
+        res.status(500).json({ error: "Failed to fetch applicants", ok: false });
+    }
+}
+);
+
+
+
+
+
+
+
+
+
+
+module.exports = router;

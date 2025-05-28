@@ -17,12 +17,18 @@ import { ContainerTextFlip } from "@/components/ui/container-text-flip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FAQAccordion from "@/components/ui/faqAnsReveal";
 import { faqItems } from "@/components/resources/faq-career";
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Careers | Tekarsh",
+  description:
+    "Join our team at Tekarsh. Explore exciting career opportunities and be part of our innovative journey.",
+};
 
 export default function CareersPage() {
   return (
     <SmoothScroll>
       <div className="min-h-screen">
-        {/* Hero Section */}
         <section className="relative bg-gradient-to-r text-[var(--word)]">
           <div className="absolute inset-0 mix-blend-multiply" />
           <div className="relative container mx-auto px-4 py-16 md:py-24 flex-row items-center justify-center border-0 border-amber-600 w-5/6 rounded-lg">
@@ -259,8 +265,8 @@ export default function CareersPage() {
                 <TabsList>
                   <TabsTrigger value="all">All Positions</TabsTrigger>
                   <TabsTrigger value="engineering">Engineering</TabsTrigger>
-                  <TabsTrigger value="design">Design</TabsTrigger>
-                  <TabsTrigger value="product">Product</TabsTrigger>
+                  <TabsTrigger value="management">Management</TabsTrigger>
+                  <TabsTrigger value="bpo">BPO</TabsTrigger>
                   <TabsTrigger value="marketing">Marketing</TabsTrigger>
                 </TabsList>
               </div>
@@ -271,11 +277,11 @@ export default function CareersPage() {
               <TabsContent value="engineering">
                 <JobListings category="engineering" />
               </TabsContent>
-              <TabsContent value="design">
-                <JobListings category="design" />
+              <TabsContent value="management">
+                <JobListings category="management" />
               </TabsContent>
-              <TabsContent value="product">
-                <JobListings category="product" />
+              <TabsContent value="bpo">
+                <JobListings category="bpo" />
               </TabsContent>
               <TabsContent value="marketing">
                 <JobListings category="marketing" />

@@ -8,24 +8,26 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
+import { ContactFormData } from "@/types/interface";
+import toast, { Toaster } from "react-hot-toast";
+const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ContactFormData>({
     fullName: "",
     email: "",
     subject: "",
     message: "",
+    phoneNo: "",
   });
-  
+
   const dhaka =
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3651.8982321441673!2d90.39093502525673!3d23.783126888219395!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDQ2JzU1LjgiTiA5MMKwMjMnNDIuNCJF!5e0!3m2!1sen!2sus!4v1716143500000!5m2!1sen!2sus&markers=color:red%7Clabel:A%7C23.782176263262578,90.39511505285714&markers=color:green%7Clabel:B%7C23.784077573537783,90.39350384473394";
-  
+
   const usa =
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3105.001!2d-77.07113!3d38.896588!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzjCsDUzJzQ3LjciTiA3N8KwMDQnMTYuMSJX!5e0!3m2!1sen!2sus!4v1716143500000!5m2!1sen!2sus&markers=color:red%7Clabel:A%7C38.895267,-77.0712667&markers=color:green%7Clabel:B%7C38.896588,-77.07113";
-  
-  const [mapSource, setMapSource] = useState("dhaka");
 
+  const [mapSource, setMapSource] = useState("dhaka");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -34,16 +36,29 @@ export default function ContactPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
-    // Here you would typically send the data to your backend
-    alert("Message sent successfully!");
-    setFormData({ fullName: "", email: "", subject: "", message: "" });
+    const response = await fetch(`${url}/contact`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+    const data = await response.json();
+    if (!data.ok) {
+      setFormData({ fullName: "", email: "", subject: "", message: "", phoneNo: "" });
+      toast.error("Failed to send message!");
+      return;
+    }
+    toast.success("Message sent successfully!");
+    setFormData({ fullName: "", email: "", subject: "", message: "", phoneNo: "" });
   };
 
   return (
     <div className="flex items-start mt-10 justify-center min-h-screen">
+      <Toaster position="top-right" reverseOrder={false} />
       <Tabs defaultValue="contact" className="w-3xl">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="contact" className="hover:bg-[var(--green)]/10">
@@ -59,7 +74,7 @@ export default function ContactPage() {
         >
           <form
             onSubmit={handleSubmit}
-            className="space-y-6 border-2 border-[var(--word)]/30 m-4 text-[var(--word)] w-2xl items-center justify-center p-4 rounded-md"
+            className="space-y-4 border-2 border-[var(--word)]/10 m-4 text-[var(--word)] w-2xl items-center justify-center p-4 rounded-md"
           >
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name</Label>
@@ -83,6 +98,20 @@ export default function ContactPage() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter your email address"
+                required
+                className=""
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phoneNo">Phone Number</Label>
+              <Input
+                id="phoneNo"
+                name="phoneNo"
+                type="phoneNo"
+                value={formData.phoneNo}
+                onChange={handleChange}
+                placeholder="Enter your phone number"
                 required
                 className=""
               />
@@ -188,7 +217,7 @@ export default function ContactPage() {
   );
 }
 
-function GoogleMap( { src } : { src: string }) {
+function GoogleMap({ src }: { src: string }) {
   return (
     <iframe
       src={src}

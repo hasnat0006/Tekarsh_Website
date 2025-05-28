@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -42,7 +42,13 @@ import ApplicantProfileModal from "@/components/admin/applicant-profile-modal";
 import { extractCVData, analyzeJobMatch } from "@/lib/ai-service";
 import type { ExtractedCVData, JobMatchAnalysis } from "@/lib/ai-service";
 
-import { mockCVData, applicantsData, jobRequirements } from "../resources/cv-data";
+import {
+  mockCVData,
+  applicantsData,
+  jobRequirements,
+} from "../resources/cv-data";
+
+const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function ApplicantsTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,6 +57,8 @@ export default function ApplicantsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
+
+  const [applicantData, setApplicantData] = useState<any[]>([]);
   const [selectedCVData, setSelectedCVData] = useState<ExtractedCVData | null>(
     null
   );
@@ -60,6 +68,29 @@ export default function ApplicantsTable() {
   const [applicants, setApplicants] = useState(applicantsData);
 
   const itemsPerPage = 5;
+
+  const userid = localStorage.getItem("userid");
+
+  useEffect(() => {
+    const fetchApplicants = async () => {
+      const response = await fetch(`${url}/get-applicants?id=${userid}`);
+      if (!response.ok) {
+        console.error("Failed to fetch applicants");
+        return;
+      }
+      const data = await response.json();
+      if (data && Array.isArray(data)) {
+        setApplicantData(data);
+      } else {
+        console.error("Invalid applicants data format", data);
+      }
+    };
+    fetchApplicants();
+  }, [userid]);
+
+  useEffect(() => {
+    console.log("Applicants data: ", applicantData);
+  }, [applicantData]);
 
   // Get unique positions for filter
   const positions = Array.from(

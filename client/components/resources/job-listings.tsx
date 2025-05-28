@@ -1,11 +1,8 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import JobModal from "@/components/job-modal";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Briefcase, MapPin, Search, Clock, Share2 } from "lucide-react";
-import JobModal from "@/components/job-modal";
 import {
   Select,
   SelectContent,
@@ -13,274 +10,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { useSearchParams, useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
+import { Job, JobListingsProps } from "@/types/interface";
+import { Briefcase, MapPin, Search, Share2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
-// Mock job data
-const jobsData = [
-  {
-    id: 1,
-    title: "Senior Frontend Developer",
-    department: "engineering",
-    location: "San Francisco, CA (Remote Option)",
-    type: "Full-time",
-    experience: "5+ years",
-    description:
-      "We're looking for a Senior Frontend Developer to join our team and help build innovative web applications using React, Next.js, and modern frontend technologies.",
-    responsibilities: [
-      "Design and implement new features and functionality",
-      "Build reusable components and libraries for future use",
-      "Optimize applications for maximum speed and scalability",
-      "Collaborate with back-end developers and designers",
-      "Stay up-to-date with emerging trends and technologies",
-    ],
-    requirements: [
-      "5+ years of experience in frontend development",
-      "Strong proficiency in JavaScript, HTML, CSS",
-      "Experience with React.js and Next.js",
-      "Understanding of server-side rendering and state management",
-      "Familiarity with RESTful APIs and GraphQL",
-      "Experience with testing frameworks like Jest",
-    ],
-    preferred: [
-      "Experience with TypeScript",
-      "Knowledge of UI/UX design principles",
-      "Contributions to open-source projects",
-      "Experience with CI/CD pipelines",
-    ],
-  },
-  {
-    id: 2,
-    title: "UX/UI Designer",
-    department: "design",
-    location: "New York, NY (Hybrid)",
-    type: "Full-time",
-    experience: "3+ years",
-    description:
-      "We're seeking a talented UX/UI Designer to create beautiful, intuitive interfaces for our products that delight our users and help them achieve their goals efficiently.",
-    responsibilities: [
-      "Create user-centered designs by understanding business requirements and user feedback",
-      "Design flows, prototypes, and high-fidelity mockups",
-      "Collaborate with product managers and engineers",
-      "Conduct user research and usability testing",
-      "Create and maintain design systems",
-    ],
-    requirements: [
-      "3+ years of experience in UX/UI design",
-      "Strong portfolio demonstrating design thinking",
-      "Proficiency in design tools like Figma or Sketch",
-      "Understanding of accessibility standards",
-      "Experience conducting user research",
-    ],
-    preferred: [
-      "Experience with design systems",
-      "Knowledge of HTML/CSS",
-      "Background in mobile app design",
-      "Experience in an agile environment",
-    ],
-  },
-  {
-    id: 3,
-    title: "Backend Engineer",
-    department: "engineering",
-    location: "Austin, TX (Remote Option)",
-    type: "Full-time",
-    experience: "4+ years",
-    description:
-      "Join our backend team to build scalable, reliable services that power our applications. You'll work with modern technologies to solve complex problems and deliver high-performance solutions.",
-    responsibilities: [
-      "Design and implement scalable backend services",
-      "Optimize database queries and data structures",
-      "Implement security and data protection measures",
-      "Collaborate with frontend developers",
-      "Write clean, maintainable, and well-tested code",
-    ],
-    requirements: [
-      "4+ years of experience in backend development",
-      "Strong knowledge of Node.js, Python, or Java",
-      "Experience with databases (SQL and NoSQL)",
-      "Understanding of RESTful APIs and microservices",
-      "Knowledge of cloud services (AWS, Azure, or GCP)",
-    ],
-    preferred: [
-      "Experience with containerization (Docker, Kubernetes)",
-      "Knowledge of message queues and event-driven architecture",
-      "Experience with CI/CD and DevOps practices",
-      "Contributions to open-source projects",
-    ],
-  },
-  {
-    id: 4,
-    title: "Product Manager",
-    department: "product",
-    location: "Seattle, WA (Hybrid)",
-    type: "Full-time",
-    experience: "3+ years",
-    description:
-      "We're looking for a Product Manager to help define and execute our product strategy. You'll work closely with engineering, design, and business teams to deliver products that users love.",
-    responsibilities: [
-      "Define product vision, strategy, and roadmap",
-      "Gather and prioritize product requirements",
-      "Work closely with engineering and design teams",
-      "Analyze market trends and competition",
-      "Measure and optimize product performance",
-    ],
-    requirements: [
-      "3+ years of experience in product management",
-      "Strong analytical and problem-solving skills",
-      "Excellent communication and stakeholder management",
-      "Experience with agile methodologies",
-      "Data-driven decision making",
-    ],
-    preferred: [
-      "Technical background or experience",
-      "Experience with product analytics tools",
-      "MBA or relevant advanced degree",
-      "Experience in SaaS products",
-    ],
-  },
-  {
-    id: 5,
-    title: "DevOps Engineer",
-    department: "engineering",
-    location: "Remote",
-    type: "Full-time",
-    experience: "3+ years",
-    description:
-      "Join our infrastructure team to build and maintain our cloud-based systems. You'll help ensure our applications are reliable, scalable, and secure.",
-    responsibilities: [
-      "Design and implement CI/CD pipelines",
-      "Manage cloud infrastructure (AWS, GCP)",
-      "Implement monitoring and alerting systems",
-      "Automate deployment and scaling processes",
-      "Collaborate with development teams on infrastructure needs",
-    ],
-    requirements: [
-      "3+ years of experience in DevOps or SRE roles",
-      "Strong knowledge of cloud platforms (AWS, GCP, or Azure)",
-      "Experience with containerization and orchestration",
-      "Proficiency in scripting languages (Python, Bash)",
-      "Understanding of networking and security principles",
-    ],
-    preferred: [
-      "Experience with infrastructure as code (Terraform, CloudFormation)",
-      "Knowledge of monitoring tools (Prometheus, Grafana)",
-      "Experience with Kubernetes in production",
-      "Security certifications",
-    ],
-  },
-  {
-    id: 6,
-    title: "Marketing Specialist",
-    department: "marketing",
-    location: "Chicago, IL (Hybrid)",
-    type: "Full-time",
-    experience: "2+ years",
-    description:
-      "We're seeking a Marketing Specialist to help grow our brand and drive customer acquisition. You'll work on digital marketing campaigns, content creation, and analytics.",
-    responsibilities: [
-      "Plan and execute digital marketing campaigns",
-      "Create engaging content for various channels",
-      "Analyze campaign performance and optimize strategies",
-      "Collaborate with design and product teams",
-      "Stay up-to-date with marketing trends",
-    ],
-    requirements: [
-      "2+ years of experience in digital marketing",
-      "Experience with SEO, SEM, and social media marketing",
-      "Strong analytical skills and experience with marketing analytics",
-      "Excellent written and verbal communication",
-      "Experience with marketing automation tools",
-    ],
-    preferred: [
-      "Experience in B2B SaaS marketing",
-      "Knowledge of graphic design principles",
-      "Experience with content management systems",
-      "Marketing certifications",
-    ],
-  },
-  {
-    id: 7,
-    title: "Junior Software Developer",
-    department: "engineering",
-    location: "Boston, MA (Hybrid)",
-    type: "Full-time",
-    experience: "0-2 years",
-    description:
-      "We're looking for passionate Junior Developers to join our team. This is a great opportunity to learn and grow while working on real-world projects with experienced mentors.",
-    responsibilities: [
-      "Develop and maintain software applications",
-      "Write clean, testable code with proper documentation",
-      "Collaborate with senior developers and other team members",
-      "Participate in code reviews and team meetings",
-      "Learn and adopt best practices and new technologies",
-    ],
-    requirements: [
-      "Bachelor's degree in Computer Science or related field (or equivalent experience)",
-      "Basic knowledge of programming languages (JavaScript, Python, etc.)",
-      "Understanding of data structures and algorithms",
-      "Eagerness to learn and problem-solving attitude",
-      "Good communication skills",
-    ],
-    preferred: [
-      "Internship or project experience",
-      "Knowledge of web development (HTML, CSS, JavaScript)",
-      "Familiarity with version control systems (Git)",
-      "Understanding of software development methodologies",
-    ],
-  },
-  {
-    id: 8,
-    title: "Data Scientist",
-    department: "engineering",
-    location: "Remote",
-    type: "Full-time",
-    experience: "3+ years",
-    description:
-      "Join our data science team to extract insights from data and build machine learning models that power our products and help make data-driven decisions.",
-    responsibilities: [
-      "Develop machine learning models and algorithms",
-      "Analyze large datasets to extract insights",
-      "Collaborate with engineering and product teams",
-      "Create data visualizations and reports",
-      "Stay current with the latest ML research and techniques",
-    ],
-    requirements: [
-      "3+ years of experience in data science or related field",
-      "Strong programming skills in Python or R",
-      "Experience with machine learning libraries and frameworks",
-      "Strong statistical knowledge and mathematical skills",
-      "Experience with data manipulation and analysis",
-    ],
-    preferred: [
-      "Advanced degree in Computer Science, Statistics, or related field",
-      "Experience with deep learning frameworks",
-      "Knowledge of big data technologies",
-      "Experience deploying ML models to production",
-    ],
-  },
-];
-
-interface JobListingsProps {
-  category: string;
-}
+const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function JobListings({ category }: JobListingsProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [experienceFilter, setExperienceFilter] = useState("");
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [jobsData, setJobsData] = useState<Job[]>([]);
   const searchParams = useSearchParams();
-  const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      const response = await fetch(`${url}/get-jobs`);
+      const data = await response.json();
+      if (!data) {
+        console.error("Failed to fetch jobs data");
+        return;
+      }
+      console.log("Fetched jobs data:", data);
+      setJobsData(data);
+    };
+    fetchJobs().catch((error) => {
+      console.error("Error fetching jobs:", error);
+      toast({
+        title: "Error fetching jobs",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    });
+  }, []);
 
   // Check for job ID in URL params on component mount
   useEffect(() => {
     const jobId = searchParams.get("jobId");
     if (jobId) {
-      const job = jobsData.find((j) => j.id === Number.parseInt(jobId));
+      const job = jobsData.find((j) => j.job_id === jobId);
       if (job) {
         setSelectedJob(job);
         setIsModalOpen(true);
@@ -298,26 +71,28 @@ export default function JobListings({ category }: JobListingsProps) {
 
   // Filter jobs based on category, search term, location, and experience
   const filteredJobs = jobsData.filter((job) => {
-    const matchesCategory = category === "all" || job.department === category;
-    const matchesSearch = job.title
+    const matchesCategory =
+      category === "all" || job.description.department === category;
+    const matchesSearch = job.description.title
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesLocation =
-      !locationFilter || job.location.includes(locationFilter);
+      !locationFilter || job.description.location.includes(locationFilter);
     const matchesExperience =
-      !experienceFilter || job.experience.includes(experienceFilter);
+      !experienceFilter ||
+      job.description.experience.includes(experienceFilter);
 
     return (
       matchesCategory && matchesSearch && matchesLocation && matchesExperience
     );
   });
 
-  const openJobModal = (job: any) => {
+  const openJobModal = (job: Job) => {
     setSelectedJob(job);
     setIsModalOpen(true);
     // Update URL with job ID without full page reload
     const newUrl = new URL(window.location.href);
-    newUrl.searchParams.set("jobId", job.id.toString());
+    newUrl.searchParams.set("jobId", job.job_id.toString());
     window.history.pushState({}, "", newUrl.toString());
   };
 
@@ -329,19 +104,19 @@ export default function JobListings({ category }: JobListingsProps) {
     window.history.pushState({}, "", newUrl.toString());
   };
 
-  const shareJob = (job: any, e: React.MouseEvent) => {
+  const shareJob = (job: Job, e: React.MouseEvent) => {
     e.stopPropagation();
 
     // Create the shareable URL with job ID
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/career?jobId=${job.id}#open-positions`;
+    const shareUrl = `${baseUrl}/career?jobId=${job.job_id}#open-positions`;
 
     // Check if Web Share API is available
     if (navigator.share) {
       navigator
         .share({
-          title: `Job Opening: ${job.title}`,
-          text: `Check out this job opportunity: ${job.title} at our company!`,
+          title: `Job Opening: ${job.description.title}`,
+          text: `Check out this job opportunity: ${job.description.title} at our company!`,
           url: shareUrl,
         })
         .catch((error) => {
@@ -378,7 +153,7 @@ export default function JobListings({ category }: JobListingsProps) {
   const locations = Array.from(
     new Set(
       jobsData.map((job) => {
-        const locationParts = job.location.split("(")[0].trim();
+        const locationParts = job.description.location.split("(")[0].trim();
         return locationParts;
       })
     )
@@ -386,7 +161,7 @@ export default function JobListings({ category }: JobListingsProps) {
 
   // Get unique experience levels for filter
   const experienceLevels = Array.from(
-    new Set(jobsData.map((job) => job.experience))
+    new Set(jobsData.map((job) => job.description.experience))
   );
 
   return (
@@ -443,43 +218,52 @@ export default function JobListings({ category }: JobListingsProps) {
         {filteredJobs.length > 0 ? (
           filteredJobs.map((job) => (
             <div
-              key={job.id}
+              key={job.job_id}
               className="bg-[var(--word)]/4 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-semibold mb-2">{job.title}</h3>
-                  <div className="flex flex-wrap gap-3 text-sm text-gray-600 mb-4">
-                    <div className="flex items-center">
-                      <Briefcase className="h-4 w-4 mr-1" />
-                      <span>
-                        {job.department.charAt(0).toUpperCase() +
-                          job.department.slice(1)}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      <span>{job.location}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span>{job.experience}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-xl font-semibold mb-2">
+                      {job.description.title}
+                    </h3>
                     <Badge
                       variant="outline"
                       className="bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
                     >
-                      {job.type}
+                      {job.description.type}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-3 text-sm text-gray-600 mb-4">
+                    <div className="flex items-center">
+                      <Briefcase className="h-4 w-4 mr-1" />
+                      <span>
+                        {job.description.department.charAt(0).toUpperCase() +
+                          job.description.department.slice(1)}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      <span>{job.description.location}</span>
+                    </div>
+                   
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge
+                      variant="outline"
+                      className="bg-violet-50 text-violet-700 hover:bg-violet-100 border-violet-200"
+                    >
+                      {job.description.salary?.currency}{": "}
+                      {job.description.salary?.min} -{" "}
+                      {job.description.salary?.max}{" "}
                     </Badge>
                     <Badge
                       variant="outline"
                       className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
                     >
-                      {job.experience}
+                      {job.description.experience}
                     </Badge>
-                    {job.experience.includes("0-2") && (
+                    {job.description.experience.includes("0-2") && (
                       <Badge
                         variant="outline"
                         className="bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
@@ -487,7 +271,9 @@ export default function JobListings({ category }: JobListingsProps) {
                         Entry Level
                       </Badge>
                     )}
-                    {job.location.toLowerCase().includes("remote") && (
+                    {job.description.location
+                      .toLowerCase()
+                      .includes("remote") && (
                       <Badge
                         variant="outline"
                         className="bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border-yellow-200"

@@ -16,25 +16,8 @@ import { useToast } from "@/components/ui/use-toast"
 import { Modal, ModalContent, ModalDescription, ModalFooter, ModalHeader, ModalTitle } from "@/components/ui/modal"
 import { Loader2, Plus, Trash2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { JobFormData } from "@/types/interface"
 
-interface JobFormData {
-  title: string
-  department: string
-  location: string
-  type: string
-  experience: string
-  description: string
-  responsibilities: string[]
-  requirements: string[]
-  preferred: string[]
-  status: string
-  salary?: {
-    min: string
-    max: string
-    currency: string
-  }
-  benefits: string[]
-}
 
 interface JobFormModalProps {
   isOpen: boolean
@@ -58,10 +41,12 @@ const defaultFormData: JobFormData = {
   salary: {
     min: "",
     max: "",
-    currency: "USD",
+    currency: "BDT",
   },
   benefits: [""],
 }
+
+const url = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 
 export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, mode }: JobFormModalProps) {
   const [formData, setFormData] = useState<JobFormData>(defaultFormData)
@@ -69,23 +54,32 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [activeTab, setActiveTab] = useState("basic")
   const { toast } = useToast()
+  const userid = localStorage.getItem("userid");
 
-  // Initialize form data when modal opens or initialData changes
+  console.log("JobFormModal mounted with initialData:", initialData)
+
   useEffect(() => {
     if (isOpen) {
       if (initialData && mode === "edit") {
         setFormData({
           ...defaultFormData,
           ...initialData,
-          responsibilities: initialData.responsibilities || [""],
-          requirements: initialData.requirements || [""],
-          preferred: initialData.preferred || [""],
-          benefits: initialData.benefits || [""],
+          title: initialData.description.title || "",
+          department: initialData.description.department || "engineering",
+          location: initialData.description.location || "",
+          type: initialData.description.type || "Full-time",
+          experience: initialData.description.experience || "",
+          description: initialData.description.description || "",
+          status: initialData.status || "active",
+          responsibilities: initialData.description.responsibilities || [""],
+          requirements: initialData.description.requirements || [""],
+          preferred: initialData.description.preferred || [""],
+          benefits: initialData.description.benefits || [""],
           salary: {
             ...defaultFormData.salary,
-            ...initialData.salary,
+            ...initialData.description.salary,
           },
-        })
+        });
       } else {
         setFormData(defaultFormData)
       }
@@ -194,7 +188,7 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!validateForm()) {
       toast({
@@ -205,7 +199,18 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
       return
     }
 
+    console.log("Submitting job form with data:", formData)
+
     setIsSubmitting(true)
+
+    const response = await fetch(`${url}/admin/job_post`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({userid, formData}),
+    })
+    const data = await response.json();
 
     try {
       // Clean up form data before submission
@@ -322,13 +327,9 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
                           <SelectItem value="engineering">
                             Engineering
                           </SelectItem>
-                          <SelectItem value="design">Design</SelectItem>
-                          <SelectItem value="product">Product</SelectItem>
+                          <SelectItem value="bpo">BPO</SelectItem>
                           <SelectItem value="marketing">Marketing</SelectItem>
-                          <SelectItem value="sales">Sales</SelectItem>
-                          <SelectItem value="operations">Operations</SelectItem>
-                          <SelectItem value="hr">Human Resources</SelectItem>
-                          <SelectItem value="finance">Finance</SelectItem>
+                          <SelectItem value="management">Management</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -753,11 +754,11 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
                     </div>
                     <Switch
                       id="status-switch"
-                      checked={formData.status === "active"}
+                      checked={formData.status === true }
                       onCheckedChange={(checked) =>
                         handleInputChange(
                           "status",
-                          checked ? "active" : "inactive"
+                          checked ? true : false  
                         )
                       }
                     />
@@ -781,12 +782,12 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
                         </div>
                         <Badge
                           variant={
-                            formData.status === "active"
+                            formData.status === true
                               ? "default"
                               : "secondary"
                           }
                         >
-                          {formData.status === "active" ? "Active" : "Inactive"}
+                          {formData.status === true ? "Active" : "Inactive"}
                         </Badge>
                       </div>
                       <p className="text-sm line-clamp-2">

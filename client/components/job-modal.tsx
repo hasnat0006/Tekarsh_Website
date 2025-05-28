@@ -2,44 +2,60 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import {
-  Briefcase,
-  MapPin,
-  Clock,
-  CheckCircle2,
-  Upload,
-  Loader2,
-  Share2,
-  Copy,
-  Facebook,
-  Twitter,
-  Linkedin,
-} from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
-import { ToastAction } from "@/components/ui/toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Briefcase,
+  CheckCircle2,
+  Copy,
+  Facebook,
+  Linkedin,
+  Loader2,
+  MapPin,
+  Share2,
+  Twitter,
+  Upload,
+} from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useEffect, useState } from "react";
+
+import { supabase } from "@/lib/auth";
+import toast, { Toaster } from "react-hot-toast";
+
+import { Job, AnalysisData } from "@/types/interface";
+
+const backendUrl =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 
 interface JobModalProps {
-  job: any;
+  job: Job;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -52,10 +68,22 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
     email: "",
     phone: "",
     resume: null as File | null,
+    cvUrl: "",
     coverLetter: "",
+    job_id: job.job_id,
+    analysisData: {},
+    cvData: {},
   });
 
-  const { toast } = useToast();
+  // Ensure job_id updates when job changes
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      job_id: job.job_id,
+    }));
+  }, [job.job_id]);
+
+  console.log("Job data:", job);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -70,40 +98,185 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCVUpload = async () => {
+    const fileName = `${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 15)}`;
+
+    if (!formData.resume) {
+      toast.error("Please select a CV file to upload.");
+      console.error("No CV file selected");
+      return;
+    }
+    supabase.storage
+      .from("cv")
+      .upload(fileName, formData.resume)
+      .then(({ error }) => {
+        if (error) {
+          setFormData((prev) => ({ ...prev, cvUrl: "" }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            cvUrl: fileName,
+          }));
+          toast.success("CV uploaded successfully!");
+        }
+      });
+  };
+
+  const handleCVAnalysis = async () => {
+    if (!formData.cvUrl) {
+      toast.error("No CV uploaded!!");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${backendUrl}/analyze-cv`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cvUrl: formData.cvUrl,
+          jobId: job.job_id,
+        }),
+      });
+
+      if (!response.ok) {
+        toast.error("CV analysis failed!");
+        return;
+      }
+
+      const data = await response.json();
+      console.log("CV Analysis Result:", data);
+      toast.success("CV analysis complete!");
+      console.log("CV Analysis Data:", data.analysis);
+
+      if (data.analysis.overallMatch < 30 && data.analysis.skillsMatch < 30) {
+        toast.error(
+          "Your CV does not meet the minimum requirements for this job.",
+          {
+            duration: 10000,
+          }
+        );
+        return;
+      } else {
+        toast.success(
+          `Your CV matches ${data.analysis.overallMatch}% with this job.`,
+          {
+            duration: 5000,
+          }
+        );
+      }
+
+
+    
+
+      // // add data in formData like data:data
+      // After getting the analysis result
+      setFormData((prev) => {
+        const updated = {
+          ...prev,
+          job_id: job.job_id,
+          analysisData: data.analysis,
+          cvData: data.cvData,
+        };
+
+
+        // If you need to use it right away, do it here
+        console.log("Updated formData:", updated);
+        return updated;
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        job_id: job.job_id,
+        analysisData: data.analysis,
+        cvData: data.cvData,
+      }));
+
+      // setAnaData(data.analysis);
+      // setCVData(data.cvData);
+    } catch (error) {
+      toast.error("There was an error analyzing your CV.");
+    }
+  };
+
+  useEffect(() => {
+    console.log("Form Data from effect:", formData);
+  }, [formData]);
+
+  const [isCVUploading, setIsCVUploading] = useState(false);
+  const [isAnalysis, setIsAnalysis] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    // upload resume to Supabase storage
+    if (formData.resume) {
+      console.log("Uploading CV:", formData.resume.name);
+
+      setIsCVUploading(true);
+      await handleCVUpload();
+      setIsCVUploading(false);
+      console.log("CV uploaded successfully:", formData.cvUrl);
+      // If CV analysis is enabled, call the analysis function
+
+      console.log("Starting CV analysis...");
+      setIsAnalysis(true);
+      await handleCVAnalysis();
+      setIsAnalysis(false);
+      // Prepare the application data
+
+      if(!formData.analysisData || !formData.cvData) {
+        toast.error("Please try again!!");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const response = await fetch(`${backendUrl}/apply-job`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          formData,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast.error(
+          `Application submission failed: ${
+            errorData.message || "Unknown error"
+          }`
+        );
+        console.error("Error submitting application:", errorData);
+        // Optionally, you can set some state to indicate the error
+      } else {
+        const data = await response.json();
+        console.log("Application submitted successfully:", data);
+        toast.success("Application submitted successfully!");
+      }
+
       setIsSubmitting(false);
-      toast({
-        title: "Application Submitted!",
-        description: "We've received your application for " + job.title,
-      });
       onClose();
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        resume: null,
-        coverLetter: "",
-      });
-    }, 1500);
+    } else {
+      setIsSubmitting(false);
+    }
   };
 
   const shareJob = () => {
     // Create the shareable URL with job ID
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/careers?jobId=${job.id}#open-positions`;
+    const shareUrl = `${baseUrl}/careers?jobId=${job.job_id}#open-positions`;
 
     // Check if Web Share API is available
     if (navigator.share) {
       navigator
         .share({
-          title: `Job Opening: ${job.title}`,
-          text: `Check out this job opportunity: ${job.title} at our company!`,
+          title: `Job Opening: ${job.description.title}`,
+          text: `Check out this job opportunity: ${job.description.title} at our company!`,
           url: shareUrl,
         })
         .catch((error) => {
@@ -138,9 +311,9 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
 
   const shareToSocial = (platform: string) => {
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/careers?jobId=${job.id}#open-positions`;
-    const title = `Job Opening: ${job.title}`;
-    const text = `Check out this job opportunity: ${job.title} at our company!`;
+    const shareUrl = `${baseUrl}/careers?jobId=${job.job_id}#open-positions`;
+    // const title = `Job Opening: ${job.description.title}`;
+    const text = `Check out this job opportunity: ${job.description.title} at our company!`;
 
     let url = "";
 
@@ -167,13 +340,25 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
     }
   };
 
+  console.log("Form submitted:", {
+    jobId: job.job_id,
+    name: formData.name,
+    email: formData.email,
+    phone: formData.phone,
+    resume: formData.cvUrl,
+    coverLetter: formData.coverLetter,
+  });
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
+      <Toaster position="top-right" />
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex flex-row items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <DialogTitle className="text-2xl">{job.title}</DialogTitle>
+              <DialogTitle className="text-2xl">
+                {job.description.title}
+              </DialogTitle>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -188,7 +373,7 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
                   <DropdownMenuItem
                     onClick={() =>
                       copyToClipboard(
-                        `${window.location.origin}/career?jobId=${job.id}#open-positions`
+                        `${window.location.origin}/career?jobId=${job.job_id}#open-positions`
                       )
                     }
                   >
@@ -215,13 +400,13 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
               <div className="flex items-center">
                 <Briefcase className="h-4 w-4 mr-1" />
                 <span>
-                  {job.department.charAt(0).toUpperCase() +
-                    job.department.slice(1)}
+                  {job.description.department.charAt(0).toUpperCase() +
+                    job.description.department.slice(1)}
                 </span>
               </div>
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-1" />
-                <span>{job.location}</span>
+                <span>{job.description.location}</span>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
@@ -229,9 +414,9 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
                 variant="outline"
                 className="bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
               >
-                {job.type}
+                {job.description.type}
               </Badge>
-              {job.experience.includes("0-2") && (
+              {job.description.experience.includes("0-2") && (
                 <Badge
                   variant="outline"
                   className="bg-green-50 text-green-700 border-green-200"
@@ -239,7 +424,7 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
                   Entry Level
                 </Badge>
               )}
-              {job.location.toLowerCase().includes("remote") && (
+              {job.description.location.toLowerCase().includes("remote") && (
                 <Badge
                   variant="outline"
                   className="bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border-yellow-200"
@@ -251,7 +436,7 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
                 variant="outline"
                 className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
               >
-                {job.experience}
+                {job.description.experience}
               </Badge>
             </div>
           </div>
@@ -272,42 +457,48 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold mb-2">About the Role</h3>
-                <p className="text-gray-700">{job.description}</p>
+                <p className="text-gray-700">{job.description.description}</p>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold mb-2">Responsibilities</h3>
                 <ul className="space-y-2">
-                  {job.responsibilities.map((item: string, index: number) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-[var(--green)] mt-0.5 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
+                  {job.description.responsibilities.map(
+                    (item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-[var(--green)] mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    )
+                  )}
                 </ul>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold mb-2">Requirements</h3>
                 <ul className="space-y-2">
-                  {job.requirements.map((item: string, index: number) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-[var(--green)] mt-0.5 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
+                  {job.description.requirements.map(
+                    (item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-[var(--green)] mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    )
+                  )}
                 </ul>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold mb-2">Nice to Have</h3>
                 <ul className="space-y-2">
-                  {job.preferred.map((item: string, index: number) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-[var(--green)] mt-0.5 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
+                  {job.description.preferred.map(
+                    (item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-[var(--green)] mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    )
+                  )}
                 </ul>
               </div>
             </div>
@@ -369,7 +560,7 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="resume">Resume/CV *</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <div className="border-2 relative overflow-hidden border-dashed border-gray-300 rounded-lg p-6 text-center">
                     <input
                       type="file"
                       id="resume"
@@ -391,9 +582,7 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
                       <p className="text-xs text-gray-500 mb-4">
                         PDF, DOC, or DOCX up to 5MB
                       </p>
-                      <Button type="button" variant="outline" size="sm">
-                        Browse Files
-                      </Button>
+                      <Button size="sm">Browse Files</Button>
                     </label>
                   </div>
                 </div>
@@ -427,7 +616,11 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Submitting...
+                      {isCVUploading
+                        ? "Uploading CV..."
+                        : isAnalysis
+                        ? "Analyzing CV..."
+                        : "Submitting..."}
                     </>
                   ) : (
                     "Submit Application"
@@ -437,6 +630,37 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
             </form>
           </TabsContent>
         </Tabs>
+        {/* <AlertDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+        >
+          <AlertDialogContent className="font-poppins">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-center">
+                Delete Job Posting
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete{" "}
+                <span className="font-semibold">
+                  {jobToDelete?.description.title}
+                </span>
+                ? This action cannot be undone and will permanently remove the
+                job posting and all associated applicant data.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={handleDeleteCancel}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                className="bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 focus:ring-red-600"
+              >
+                Delete Job
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog> */}
       </DialogContent>
     </Dialog>
   );
