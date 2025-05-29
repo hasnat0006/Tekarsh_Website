@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "@/components/theme-provider";
 import {NavbarDemo} from "@/components/navbar";
+import TekarshFooter from "@/components/ui/tekarsh-footer";
 export default function RootLayout({
   children,
 }: {
@@ -40,11 +41,7 @@ export default function RootLayout({
             <NavbarDemo />
             {children}
           </div>
-          <footer className=" py-4">
-            <div className=" bg-test mx-auto text-center">
-              &copy; {new Date().getFullYear()} Tekarsh. All rights reserved.
-            </div>
-          </footer>
+          <TekarshFooter />
         </ThemeProvider>
       </body>
     </html>

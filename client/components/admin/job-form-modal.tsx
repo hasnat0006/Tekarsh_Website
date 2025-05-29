@@ -46,7 +46,7 @@ const defaultFormData: JobFormData = {
   benefits: [""],
 }
 
-const url = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, mode }: JobFormModalProps) {
   const [formData, setFormData] = useState<JobFormData>(defaultFormData)

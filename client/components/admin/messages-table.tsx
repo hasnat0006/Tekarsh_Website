@@ -20,7 +20,7 @@ import MessageViewModal from "@/components/admin/message-view-modal"
 import toast, { Toaster } from "react-hot-toast"
 
 import { Message } from "@/types/interface"
-const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 
 export default function MessagesTable() {

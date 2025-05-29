@@ -16,7 +16,7 @@ import { Briefcase, MapPin, Search, Share2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function JobListings({ category }: JobListingsProps) {
   const [searchTerm, setSearchTerm] = useState("");

@@ -67,7 +67,7 @@ export default function JobApplicantsModal({
   const [isLoading, setIsLoading] = React.useState(false);
   const [applicants, setApplicants] = React.useState<ApplicantType[]>([]);
 
-  const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   React.useEffect(() => {
     const fetchApplicants = async () => {

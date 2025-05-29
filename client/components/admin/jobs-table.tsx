@@ -127,7 +127,7 @@ const mockJobApplicants: Record<string, any[]> = {
   ],
 };
 
-const url = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function JobsTable() {
   const [searchTerm, setSearchTerm] = useState("");

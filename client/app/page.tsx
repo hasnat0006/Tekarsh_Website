@@ -8,6 +8,7 @@ import FAQAccordion from "@/components/ui/faqAnsReveal";
 import { FlipWords } from "@/components/ui/flip-words";
 import { Services } from "@/components/resources/services";
 import SmoothScroll from "@/components/smooth-scroll";
+import { motion } from "framer-motion";
 
 import { faqItems } from "@/components/resources/faq";
 export default function Home() {
@@ -26,7 +27,7 @@ export default function Home() {
         <Spotlight />
         <main className="flex-1">
           {/* Hero Section */}
-          <section className="container mx-auto p-12 md:py-20">
+          <section className="container mx-auto p-12 md:py-20" id="hero">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div className="space-y-6 p-8">
                 <h1 className="text-4xl md:text-5xl font-bold">

@@ -5,27 +5,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import type { ExtractedCVData, JobMatchAnalysis } from "@/lib/ai-service";
 
 import ApplicantProfileModal from "./applicant-profile-modal";
 
 
 import { ApplicantType } from "@/types/interface";
 
-const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function RecentApplicants() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedApplicant, setSelectedApplicant] =
     useState<ApplicantType | null>(null);
-  const [selectedCVData, setSelectedCVData] = useState<ExtractedCVData | null>(
-    null
-  );
-
   const [recentApplicants, setRecentApplicants] = useState<ApplicantType[]>([]);
-
-  const [selectedJobMatch, setSelectedJobMatch] =
-    useState<JobMatchAnalysis | null>(null);
 
   useEffect(() => {
     const fetchApplicants = async () => {

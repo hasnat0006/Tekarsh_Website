@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ContactFormData } from "@/types/interface";
 import toast, { Toaster } from "react-hot-toast";
-const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function ContactPage() {
   const [formData, setFormData] = useState<ContactFormData>({

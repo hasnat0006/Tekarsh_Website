@@ -30,8 +30,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { ExtractedCVData, JobMatchAnalysis } from "@/lib/ai-service";
-import { analyzeJobMatch, extractCVData } from "@/lib/ai-service";
 import {
   ChevronLeft,
   ChevronRight,
@@ -42,15 +40,10 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import {
-  // applicantsData,
-  jobRequirements,
-  mockCVData,
-} from "../resources/cv-data";
 
 import { ApplicantType } from "@/types/interface";
 
-const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function ApplicantsTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -62,11 +55,6 @@ export default function ApplicantsTable() {
     useState<ApplicantType | null>(null);
 
   const [applicantData, setApplicantData] = useState<ApplicantType[]>([]);
-  const [selectedCVData, setSelectedCVData] = useState<ExtractedCVData | null>(
-    null
-  );
-  const [selectedJobMatch, setSelectedJobMatch] =
-    useState<JobMatchAnalysis | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const [viewCV, setViewCV] = useState(false);
@@ -74,7 +62,6 @@ export default function ApplicantsTable() {
   const [paginatedApplicants, setPaginatedApplicants] = useState<
     ApplicantType[]
   >([]);
-  // const [applicants, setApplicants] = useState<ApplicantType[]>(applicantData);
 
   const itemsPerPage = 5;
 
@@ -88,11 +75,14 @@ export default function ApplicantsTable() {
         return;
       }
       const data = await response.json();
-      if (data && Array.isArray(data)) {
 
-        setApplicantData(data);
+      console.log("Fetched applicants data: ", data);
+
+      if (data.applicants && Array.isArray(data.applicants)) {
+
+        setApplicantData(data.applicants);
         setPaginatedApplicants(
-          data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+          data.applicants.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
         );
       } else {
         console.error("Invalid applicants data format", data);
@@ -109,7 +99,7 @@ export default function ApplicantsTable() {
       applicant.job_description.title
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      applicant.cv_data.skills.some((skill) =>
+      applicant?.cv_data?.skills?.some((skill) =>
         skill.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
@@ -123,14 +113,7 @@ export default function ApplicantsTable() {
   });
 
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
-  // setPaginatedApplicants(
-  //   filteredApplicants.slice(
-  //     (currentPage - 1) * itemsPerPage,
-  //     currentPage * itemsPerPage
-  //   )
-  // );
   useEffect(() => {
-    // setApplicants(applicantData);
     console.log("Applicants data: ", applicantData);
   }, [applicantData]);
   
@@ -148,18 +131,7 @@ export default function ApplicantsTable() {
 
   const handleViewApplicant = async (applicant: ApplicantType) => {
     try {
-      // Get mock CV data for this applicant
-      const cvText = mockCVData[applicant.applicants_id] || mockCVData["1"];
-
-      // Extract CV data using AI
-      const cvData = await extractCVData(cvText);
-
-      // Analyze job match
-      const jobMatch = await analyzeJobMatch(cvData, jobRequirements);
-
       setSelectedApplicant(applicant);
-      setSelectedCVData(cvData);
-      setSelectedJobMatch(jobMatch);
       setIsModalOpen(true);
     } catch (error) {
       console.error("Error processing applicant data:", error);
@@ -186,26 +158,8 @@ export default function ApplicantsTable() {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedApplicant(null);
-    setSelectedCVData(null);
-    setSelectedJobMatch(null);
   };
 
-  // useEffect(() => {
-  //   console.log("Filtered applicants: ", filteredApplicants);
-  // }, [filteredApplicants]);
-
-  // useEffect(() => {
-  //   console.log("Paginated applicants: ", paginatedApplicants);
-  // }, [paginatedApplicants]);
-
-  // console.log("Positions for filter: ", positions);
-  // console.log("Current page: ", currentPage);
-  // console.log("Total pages: ", totalPages);
-  // console.log("Search term: ", searchTerm);
-  // console.log("Status filter: ", statusFilter);
-  // console.log("Position filter: ", positionFilter);
-  // console.log("Selected applicant: ", selectedApplicant);
-  // console.log("Paginated applicants: ", paginatedApplicants);
 
   return (
     <div className="space-y-4 flex flex-col items-center">
@@ -225,7 +179,7 @@ export default function ApplicantsTable() {
               <Button
                 variant="outline"
                 size="icon"
-                // onClick={() => setShowFilters(!showFilters)}
+                onClick={() => setShowFilters(!showFilters)}
               >
                 <SlidersHorizontal className="h-4 w-4" />
               </Button>
@@ -443,7 +397,6 @@ export default function ApplicantsTable() {
         </Table>
       </div>
 
-      {/* Pagination */}
       {filteredApplicants.length > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
@@ -489,8 +442,7 @@ export default function ApplicantsTable() {
         </div>
       )}
 
-      {/* Applicant Profile Modal */}
-      {selectedApplicant && selectedCVData && selectedJobMatch && (
+      {selectedApplicant && (
         <ApplicantProfileModal
           isOpen={isModalOpen}
           onClose={closeModal}

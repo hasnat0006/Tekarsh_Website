@@ -1,6 +1,72 @@
 import React from "react";
 import { Timeline } from "@/components/ui/timeline";
 import { CheckCircle } from "lucide-react";
+
+const softData = [
+  "Custom software built for performance, security, and scale.",
+  "End-to-end web and mobile app development.",
+  "Modern frontend tech (React, Vue, Angular).",
+  "Scalable backend systems (Node.js, .NET, Java).",
+  "Native and cross-platform mobile apps (Flutter, React Native).",
+  "API design and integration.",
+  "Database architecture (SQL, NoSQL).",
+  "DevOps support with CI/CD pipelines.",
+  "Legacy system modernization.",
+  "SaaS product development.",
+  ];
+  
+  
+  const qaData = [
+  "Manual functional and regression testing.",
+  "Automated testing scripts using Selenium, Cypress, etc.",
+  "Test planning and strategy development.",
+  "Performance/load testing.",
+  "UI/UX usability testing.",
+  "Mobile app testing on iOS/Android.",
+  "API testing with Postman or Swagger.",
+  "CI-integrated testing.",
+  ];
+  
+  
+  const bpoData = [
+  "Structured and unstructured data processing.",
+  "Market and competitor research.",
+  "Menu data entry and validation.",
+  "OCR and manual data extraction.",
+  "Product categorization and taxonomy tagging.",
+  "CRM and lead data curation.",
+  "SLA-based delivery.",
+  "High-volume operations scalability.",
+  "Excel/CSV data transformations.",
+  "eCommerce data support.",
+  ];
+  
+  
+  const supportData = [
+  "Tiered support model (L1–L3).",
+  "Live bug fixing and hot patch deployment.",
+  "Uptime monitoring and incident response.",
+  "Knowledge base and documentation support.",
+  "Feature walkthroughs for clients.",
+  "Ticketing and issue tracking systems.",
+  "Post-launch product training.",
+  "Usage analytics and reporting.",
+  "SLA-bound response times.",
+  ];
+  
+  
+  const staffData = [
+  "Rapid developer/QA onboarding.",
+  "Cultural and language-aligned hiring.",
+  "Flexible contracts and scale-up models.",
+  "Dedicated team or team extension models.",
+  "Embedded team members in agile workflows.",
+  "Daily syncs with client-side PMs.",
+  "Skilled in React, Node.js, .NET, Python, SQL, and more.",
+  "Interview-based selection by clients.",
+  ];
+
+
 export function Services() {
   const data = [
     {
@@ -8,32 +74,12 @@ export function Services() {
       content: (
         <div>
           <div className="mb-8">
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Custom application development tailored for scalability and
-                performance.
-              </span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Expertise in full-stack development, including frontend,
-                backend, and mobile applications.
-              </span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Agile methodology with rapid iteration and client collaboration.
-              </span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Delivered for both startups and enterprise-level clients.
-              </span>
-            </li>
+            {softData.map((item, index) => (
+              <li key={index} className="flex items-center">
+                <CheckCircle size={18} className="text-[var(--green)] mr-2" />
+                <span>{item}</span>
+              </li>
+            ))}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <img
@@ -59,27 +105,12 @@ export function Services() {
       content: (
         <div>
           <div className="mb-8">
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Manual and automated testing across web, mobile, and enterprise
-                platforms.
-              </span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Continuous integration of QA into development pipelines.
-              </span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>Focus on test coverage, performance, and reliability.</span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>Tools used may include Selenium, Postman, Jest, etc.</span>
-            </li>
+            {qaData.map((item, index) => (
+              <li key={index} className="flex items-center">
+                <CheckCircle size={18} className="text-[var(--green)] mr-2" />
+                <span>{item}</span>
+              </li>
+            ))}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <img
@@ -105,30 +136,12 @@ export function Services() {
       content: (
         <div>
           <div className="mb-8">
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>Data research, cleansing, and transformation tasks.</span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Large-scale, repetitive operations handled with precision and
-                SLA focus.
-              </span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Industries served include hospitality, food service, and retail.
-              </span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Supports clients like MarginEdge with critical operational
-                tasks(e.g., menu building).
-              </span>
-            </li>
+            {bpoData.map((item, index) => (
+              <li key={index} className="flex items-center">
+                <CheckCircle size={18} className="text-[var(--green)] mr-2" />
+                <span>{item}</span>
+              </li>
+            ))}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <img
@@ -154,25 +167,12 @@ export function Services() {
       content: (
         <div>
           <div className="mb-8">
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Seamless team integration—developers and QA work like internal
-                staff.
-              </span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Fast onboarding and flexible resourcing for scaling up or down.
-              </span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Emphasis on culture fit, communication, and technical skill.
-              </span>
-            </li>
+            {supportData.map((item, index) => (
+              <li key={index} className="flex items-center">
+                <CheckCircle size={18} className="text-[var(--green)] mr-2" />
+                <span>{item}</span>
+              </li>
+            ))}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <img
@@ -198,23 +198,12 @@ export function Services() {
       content: (
         <div>
           <div className="mb-8">
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>24/7 or dedicated time zone-aligned support options.</span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Issue tracking, debugging, and feature assistance for live
-                products.
-              </span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle size={18} className="text-[var(--green)] mr-2" />
-              <span>
-                Long-term support partnerships that evolve with the product.
-              </span>
-            </li>
+            {staffData.map((item, index) => (
+              <li key={index} className="flex items-center">
+                <CheckCircle size={18} className="text-[var(--green)] mr-2" />
+                <span>{item}</span>
+              </li>
+            ))}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <img

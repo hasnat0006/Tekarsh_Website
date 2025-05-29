@@ -17,7 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
-const url = process.env.BACKEND_URL || "http://localhost:5000";
+const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 interface LoginCredentials {
   email: string;
@@ -199,23 +199,6 @@ export default function LoginForm() {
             </Button>
           </form>
 
-          <div className="text-center">
-            <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-3">
-              <p className="font-medium mb-2">Demo Credentials:</p>
-              <div className="space-y-1 text-xs">
-                <p>
-                  <strong>Admin:</strong> admin@tekarsh.com / admin123
-                </p>
-                <p>
-                  <strong>HR:</strong> hr@tekarsh.com / hr123
-                </p>
-                <p>
-                  <strong>Recruiter:</strong> recruiter@tekarsh.com /
-                  recruiter123
-                </p>
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>

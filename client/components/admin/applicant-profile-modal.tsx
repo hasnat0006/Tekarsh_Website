@@ -68,8 +68,6 @@ export default function ApplicantProfileModal({
 }: ApplicantProfileModalProps) {
   const [activeTab, setActiveTab] = React.useState("overview");
 
-  console.log("Applicant Profile Modal Props:", applicant);
-
   // Calculate total experience
   const totalExperience = React.useMemo(() => {
     if (
@@ -82,13 +80,13 @@ export default function ApplicantProfileModal({
     }
     return applicant.cv_data.experience.reduce((total, exp) => {
       const duration = exp.duration;
-      const years = duration.match(/\d{4}/g);
+      const years = duration?.match(/\d{4}/g);
       if (years && years.length >= 2) {
         return total + (Number.parseInt(years[1]) - Number.parseInt(years[0]));
       } else if (
         years &&
         years.length === 1 &&
-        duration.toLowerCase().includes("present")
+        duration?.toLowerCase().includes("present")
       ) {
         const currentYear = new Date().getFullYear();
         return total + (currentYear - Number.parseInt(years[0]));
@@ -96,22 +94,6 @@ export default function ApplicantProfileModal({
       return total + 1;
     }, 0);
   }, [applicant.cv_data.experience]);
-
-  // Group skills by category
-  // const skillCategories = React.useMemo(() => {
-  //   return applicant.cv_data.skills.reduce(
-  //     (acc, skill) => {
-  //       if (!acc[skill.category]) {
-  //         acc[skill.category] = []
-  //       }
-  //       acc[skill.category].push(skill)
-  //       return acc
-  //     },
-  //     {} as Record<string, typeof applicant.cv_data.skills>,
-  //   )
-  // }, [applicant.cv_data.skills])
-
-  console.log("Applicant Profile Modal Rendered", applicant);
 
   const handleStatusChange = (newStatus: string) => {
     if (onStatusUpdate) {
@@ -171,14 +153,6 @@ export default function ApplicantProfileModal({
                     <Star className="h-3 w-3 mr-1" />
                     {applicant.analysis_data.overallMatch}% Match
                   </Badge>
-                  {/* <Button
-                    variant="link"
-                    size="icon"
-                    className="text-blue-600 ml-4 hover:text-blue-800"
-                    onClick={() => setViewCV(!viewCV)}
-                  >
-                    {viewCV ? "Hide CV" : "View CV"}
-                  </Button> */}
                 </div>
               </div>
             </div>
@@ -416,7 +390,7 @@ export default function ApplicantProfileModal({
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-purple-600">
-                            {applicant.cv_data.skills.length}
+                            {applicant?.cv_data?.skills?.length}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             Skills
@@ -431,7 +405,7 @@ export default function ApplicantProfileModal({
                           Professional Summary
                         </h4>
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                          {applicant.cv_data.basicInfo.personalSummary ||
+                          {applicant?.cv_data?.basicInfo?.personalSummary ||
                             "No summary provided. The candidate's professional summary is currently unavailable."}
                         </p>
                       </div>
@@ -439,15 +413,16 @@ export default function ApplicantProfileModal({
                       <div>
                         <h4 className="text-sm font-medium mb-2">Top Skills</h4>
                         <div className="flex flex-wrap gap-2">
-                          {applicant.cv_data.skills.map((skill, index) => (
-                            <Badge
-                              key={index}
-                              variant="outline"
-                              className="bg-violet-50 text-violet-700 border-violet-200"
-                            >
-                              {skill}
-                            </Badge>
-                          ))}
+                          {applicant?.cv_data?.skills?.length &&
+                            applicant?.cv_data?.skills.map((skill, index) => (
+                              <Badge
+                                key={index}
+                                variant="outline"
+                                className="bg-violet-50 text-violet-700 border-violet-200"
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
                         </div>
                       </div>
                     </CardContent>
@@ -670,17 +645,18 @@ export default function ApplicantProfileModal({
                           Areas for Consideration
                         </h4>
                         <ul className="space-y-1">
-                          {applicant.analysis_data.lackingsArea
-                            .slice(0, 2)
-                            .map((gap, index) => (
-                              <li
-                                key={index}
-                                className="flex items-start gap-2 text-sm"
-                              >
-                                <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                                <span>{gap}</span>
-                              </li>
-                            ))}
+                          {applicant.analysis_data.lackingsArea?.length &&
+                            applicant.analysis_data.lackingsArea
+                              .slice(0, 2)
+                              .map((gap, index) => (
+                                <li
+                                  key={index}
+                                  className="flex items-start gap-2 text-sm"
+                                >
+                                  <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                                  <span>{gap}</span>
+                                </li>
+                              ))}
                         </ul>
                       </div>
                     </CardContent>
@@ -807,46 +783,47 @@ export default function ApplicantProfileModal({
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-48 overflow-y-auto">
-                      {applicant.cv_data.projects.map((project, index) => (
-                        <div
-                          key={index}
-                          className="border-2 border-[var(--word)]/5 rounded-lg p-4"
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-medium">{project.title}</h4>
-                            {project.links && (
-                              <Button
-                                // variant="ghost"
-                                size="icon"
-                                asChild
-                                className="h-8 w-8 bg-blue-50 hover:bg-blue-100 text-blue-500 hover:text-blue-700"
-                              >
-                                <a
-                                  href={project.links || "#"}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
+                      {applicant.cv_data.projects?.length &&
+                        applicant.cv_data.projects.map((project, index) => (
+                          <div
+                            key={index}
+                            className="border-2 border-[var(--word)]/5 rounded-lg p-4"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium">{project.title}</h4>
+                              {project.links && (
+                                <Button
+                                  // variant="ghost"
+                                  size="icon"
+                                  asChild
+                                  className="h-8 w-8 bg-blue-50 hover:bg-blue-100 text-blue-500 hover:text-blue-700"
                                 >
-                                  <ExternalLink className="h-4 w-4" />
-                                </a>
-                              </Button>
-                            )}
+                                  <a
+                                    href={project.links || "#"}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <ExternalLink className="h-4 w-4" />
+                                  </a>
+                                </Button>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              {project.description}
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {project.technologies.map((tech, techIndex) => (
+                                <Badge
+                                  key={techIndex}
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  {tech}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground mb-3">
-                            {project.description}
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {project.technologies.map((tech, techIndex) => (
-                              <Badge
-                                key={techIndex}
-                                variant="outline"
-                                className="text-xs"
-                              >
-                                {tech}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </CardContent>
                 </Card>

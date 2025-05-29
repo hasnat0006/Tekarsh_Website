@@ -41,8 +41,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 import { Job, AnalysisData, CVDataAdmin } from "@/types/interface";
 
-const backendUrl =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 interface JobModalProps {
   job: Job;

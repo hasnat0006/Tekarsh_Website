@@ -11,7 +11,6 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "../ui/sidebar";
-import Overview from "./overview";
 
 export default function SidebarDemo() {
   const links = [
