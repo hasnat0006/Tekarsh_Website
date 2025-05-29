@@ -31,8 +31,8 @@ export default function CareersPage() {
       <div className="min-h-screen">
         <section className="relative bg-gradient-to-r text-[var(--word)]">
           <div className="absolute inset-0 mix-blend-multiply" />
-          <div className="relative container mx-auto md:px-4 md:py-16 md:py-24 flex-row items-center justify-center border-0 border-amber-600 w-5/6 rounded-lg">
-            <div className="max-w-xl md:space-x-4">
+          <div className="relative container mx-auto md:px-4 md:py-16 md:py-24 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-48 border-0 border-amber-600 w-full rounded-lg">
+            <div className="max-w-xl p-4 md:space-x-4">
               <h1 className="text-3xl ml-4 md:text-5xl font-bold mb-4 text-[var(--word)]/80 ">
                 Join Our Team &
               </h1>
@@ -67,20 +67,22 @@ export default function CareersPage() {
                 </Button>
               </div>
             </div>
-            <Image
-              src="/landing-hero-back.svg"
-              alt="Developers working"
-              width={500}
-              height={300}
-              className="absolute -right-10 top-5 rounded-lg object-cover"
-            />
-            <Image
-              src="/team5.jpg"
-              alt="Developers working"
-              width={550}
-              height={350}
-              className="-right-0 top-20 rounded-lg object-cover"
-            />
+            <div>
+              <Image
+                src="/landing-hero-back.svg"
+                alt="Developers working"
+                width={500}
+                height={300}
+                className="absolute right-10 top-5 rounded-lg object-cover"
+              />
+              <Image
+                src="/team5.jpg"
+                alt="Developers working"
+                width={550}
+                height={350}
+                className="-right-0 top-20 rounded-lg object-cover"
+              />
+            </div>
           </div>
         </section>
 
