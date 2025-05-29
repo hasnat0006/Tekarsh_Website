@@ -26,10 +26,10 @@ export default function Home() {
         <Spotlight />
         <main className="flex-1">
           {/* Hero Section */}
-          <section className="container mx-auto p-12 md:py-20" id="hero">
+          <section className="container mx-auto p-6 md:py-20" id="hero">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              <div className="space-y-6 p-8">
-                <h1 className="text-4xl md:text-5xl font-bold">
+              <div className="space-y-6 md:p-8">
+                <h1 className="text-3xl md:text-5xl font-bold">
                   Building{" "}
                   <span className="text-[var(--word)]/90">
                     Quality
@@ -37,7 +37,7 @@ export default function Home() {
                   </span>{" "}
                   <FlipWords words={words} />
                 </h1>
-                <p className="text-[var(--muted-foreground)] max-w-md">
+                <p className="text-[var(--muted-foreground)] text-sm md:text-lg max-w-md">
                   Scalable tech solutions with built-in quality and speed.
                   Tekarsh specializes in delivering agile software, robust QA,
                   and dedicated support services for global businesses across
@@ -69,7 +69,7 @@ export default function Home() {
               </div>
             </div>
           </section>
-          <div id="services">
+          <div id="services" >
             <Services />
           </div>
 

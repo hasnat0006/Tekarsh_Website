@@ -73,7 +73,7 @@ export function Services() {
     {
       title: "1. Software Development",
       content: (
-        <div>
+        <div className="flex flex-col items-center mt-4">
           <div className="mb-8">
             {softData.map((item, index) => (
               <li key={index} className="flex items-center">
@@ -228,7 +228,7 @@ export function Services() {
   ];
   return (
     <div className="relative w-full overflow-clip">
-      <h3 className="text-lg w-full md:text-4xl -mb-20 text-[var(--word)]/70 font-bold text-center">
+      <h3 className="text-lg w-full md:text-4xl -mb-5 md:-mb-20 text-[var(--word)]/70 font-bold text-center">
         Our Services
       </h3>
       <Timeline data={data} />

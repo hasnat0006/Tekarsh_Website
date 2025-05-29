@@ -13,10 +13,8 @@ import {
 } from "@/components/ui/resizable-navbar";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-// import ThemeChanger from "./ui/theme-changer";
 import { usePathname } from "next/navigation";
 export function NavbarDemo() {
-
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
   const [done, setDone] = useState(false);
@@ -29,7 +27,6 @@ export function NavbarDemo() {
     setDone(true);
   }, [pathname]);
 
-
   if (!done) {
     return null;
   }
@@ -37,9 +34,7 @@ export function NavbarDemo() {
   return (
     <>
       {!isAdmin && <NavbarComponent />}
-      {isAdmin && (
-        <div></div>
-      )}
+      {isAdmin && <div></div>}
     </>
   );
 }
@@ -105,17 +100,19 @@ export const NavbarComponent = () => {
             ))}
             <div className="flex w-full flex-col gap-4">
               <NavThemeChanger />
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
+              <Link
+                href="/career"
                 className="w-full"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
-                Career
-              </NavbarButton>
+                <NavbarButton variant="primary" className="w-full">
+                  Career
+                </NavbarButton>
+              </Link>
             </div>
           </MobileNavMenu>
         </MobileNav>
       </Navbar>
     </div>
-  )
+  );
 };

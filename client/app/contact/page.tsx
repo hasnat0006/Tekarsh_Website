@@ -59,7 +59,7 @@ export default function ContactPage() {
   return (
     <div className="flex items-start mt-10 justify-center min-h-screen">
       <Toaster position="top-right" reverseOrder={false} />
-      <Tabs defaultValue="contact" className="w-3xl">
+      <Tabs defaultValue="contact" className="md:w-3xl w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="contact" className="hover:bg-[var(--green)]/10">
             Contact
@@ -153,8 +153,8 @@ export default function ContactPage() {
         </TabsContent>
         <TabsContent value="visit">
           <div className="flex-row items-center justify-center w-full border-2 border-[var(--word)]/30 text-[var(--word)] rounded-md">
-            <div className="mb-4 border-[var(--word)]/30 mx-4 text-[var(--word)] items-center justify-center px-4 rounded-md grid grid-cols-2 gap-5">
-              <div className="space-y-4 p-4 border-r-2 border-[var(--word)]/30">
+            <div className="mb-4 border-[var(--word)]/30 md:mx-4 text-[var(--word)] items-start justify-start px-4 rounded-md grid md:grid-cols-2 gap-5">
+              <div className="space-y-4 md:p-4 md:border-r-2 border-[var(--word)]/30">
                 <h3 className="text-xl pl-1 text-[var(--word)]/60 font-semibold mb-4">
                   Bangladesh Branch
                 </h3>

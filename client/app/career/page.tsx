@@ -31,18 +31,18 @@ export default function CareersPage() {
       <div className="min-h-screen">
         <section className="relative bg-gradient-to-r text-[var(--word)]">
           <div className="absolute inset-0 mix-blend-multiply" />
-          <div className="relative container mx-auto px-4 py-16 md:py-24 flex-row items-center justify-center border-0 border-amber-600 w-5/6 rounded-lg">
-            <div className="max-w-xl space-x-4">
-              <h1 className="text-4xl ml-4 md:text-5xl font-bold mb-4 text-[var(--word)]/80 ">
+          <div className="relative container mx-auto md:px-4 md:py-16 md:py-24 flex-row items-center justify-center border-0 border-amber-600 w-5/6 rounded-lg">
+            <div className="max-w-xl md:space-x-4">
+              <h1 className="text-3xl ml-4 md:text-5xl font-bold mb-4 text-[var(--word)]/80 ">
                 Join Our Team &
               </h1>
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 text-[var(--word)]/80 ">
+              <h1 className="text-3xl md:text-5xl font-bold mb-6 text-[var(--word)]/80 ">
                 <ContainerTextFlip
                   words={["Build", "Create", "Develop", "Lead", "Code"]}
                 />
                 &nbsp;the Future
               </h1>
-              <p className="text-lg ml-4 mb-8 text-[var(--word)]/50 ">
+              <p className="text-sm md:text-lg ml-4 mb-8 text-[var(--word)]/50 ">
                 We&apos;re looking for passionate individuals who want to make
                 an impact. Discover exciting opportunities and grow your career
                 with us.
@@ -79,7 +79,7 @@ export default function CareersPage() {
               alt="Developers working"
               width={550}
               height={350}
-              className="absolute -right-0 top-20 rounded-lg object-cover"
+              className="-right-0 top-20 rounded-lg object-cover"
             />
           </div>
         </section>
