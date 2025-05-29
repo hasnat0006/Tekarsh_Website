@@ -367,7 +367,8 @@ export default function ApplicantsTable() {
                         <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
                           Send Email
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => {
+                        <DropdownMenuItem
+                          onClick={(e) => {
                             e.stopPropagation();
                             setViewCV(true);
                             setCVLink(applicant.cv_link);
@@ -456,9 +457,7 @@ export default function ApplicantsTable() {
           className="fixed inset-0 flex items-center justify-center z-[9999] bg-black/60 "
           style={{ top: 0, left: 0 }}
         >
-          <div
-            className="relative w-4/5 h-4/5 border border-green-200 rounded-lg overflow-hidden overflow-y-scroll bg-gray-50 shadow-2xl"
-          >
+          <div className="relative w-4/5 h-4/5 border border-green-200 rounded-lg overflow-hidden overflow-y-scroll bg-gray-50 shadow-2xl">
             <button
               className="absolute top-2 right-2 z-50 bg-white rounded-full p-1 shadow hover:bg-gray-100"
               onClick={() => setViewCV(false)}
@@ -467,7 +466,7 @@ export default function ApplicantsTable() {
               ✕
             </button>
             <iframe
-              src={`https://xihchmdjcsdzvfoujipk.supabase.co/storage/v1/object/public/cv//${cv_link}`}
+              src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/cv//${cv_link}`}
               className="w-full h-full"
               title="CV Preview"
               frameBorder="0"
