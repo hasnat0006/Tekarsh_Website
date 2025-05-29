@@ -47,17 +47,19 @@ export default function RecentApplicants() {
     setIsModalOpen(true);
   };
   const handleStatusUpdate = (applicantId: string, newStatus: string) => {
-    setApplicants((prev) =>
+    setRecentApplicants((prev) =>
       prev.map((applicant) =>
-        applicant.id === applicantId
+        applicant.applicants_id === applicantId
           ? { ...applicant, status: newStatus }
           : applicant
       )
     );
 
     // Update selected applicant if it's the one being updated
-    if (selectedApplicant?.id === applicantId) {
-      setSelectedApplicant((prev) => ({ ...prev, status: newStatus }));
+    if (selectedApplicant?.applicants_id === applicantId) {
+      setSelectedApplicant((prev) =>
+        prev ? { ...prev, status: newStatus } : null
+      );
     }
   };
 
@@ -70,8 +72,6 @@ export default function RecentApplicants() {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedApplicant(null);
-    setSelectedCVData(null);
-    setSelectedJobMatch(null);
   };
   return (
     <Card className="w-full p-2">

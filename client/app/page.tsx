@@ -8,7 +8,6 @@ import FAQAccordion from "@/components/ui/faqAnsReveal";
 import { FlipWords } from "@/components/ui/flip-words";
 import { Services } from "@/components/resources/services";
 import SmoothScroll from "@/components/smooth-scroll";
-import { motion } from "framer-motion";
 
 import { faqItems } from "@/components/resources/faq";
 export default function Home() {

@@ -12,18 +12,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { useToast } from "@/components/ui/use-toast"
+import toast, {Toaster} from "react-hot-toast"
 import { Modal, ModalContent, ModalDescription, ModalFooter, ModalHeader, ModalTitle } from "@/components/ui/modal"
 import { Loader2, Plus, Trash2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { JobFormData } from "@/types/interface"
+import { JobFormData, Job } from "@/types/interface"
 
 
 interface JobFormModalProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (data: JobFormData) => Promise<void>
-  initialData?: Partial<JobFormData>
+  initialData?: Job
   mode: "create" | "edit"
 }
 
@@ -42,7 +42,7 @@ const defaultFormData: JobFormData = {
     min: "",
     max: "",
     currency: "BDT",
-  },
+  } as NonNullable<JobFormData["salary"]>,
   benefits: [""],
 }
 
@@ -53,7 +53,6 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [activeTab, setActiveTab] = useState("basic")
-  const { toast } = useToast()
   const userid = localStorage.getItem("userid");
 
   console.log("JobFormModal mounted with initialData:", initialData)
@@ -64,20 +63,21 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
         setFormData({
           ...defaultFormData,
           ...initialData,
-          title: initialData.description.title || "",
-          department: initialData.description.department || "engineering",
-          location: initialData.description.location || "",
-          type: initialData.description.type || "Full-time",
-          experience: initialData.description.experience || "",
-          description: initialData.description.description || "",
-          status: initialData.status || "active",
-          responsibilities: initialData.description.responsibilities || [""],
-          requirements: initialData.description.requirements || [""],
-          preferred: initialData.description.preferred || [""],
-          benefits: initialData.description.benefits || [""],
+          title: initialData.description?.title ?? "",
+          department: initialData.description.department ?? "engineering",
+          location: initialData.description.location ?? "",
+          type: initialData.description.type ?? "Full-time",
+          experience: initialData.description.experience ?? "",
+          description: initialData.description.description ?? "",
+          status: initialData.status === false ? "inactive" : "active",
+          responsibilities: initialData.description.responsibilities ?? [""],
+          requirements: initialData.description.requirements ?? [""],
+          preferred: initialData.description.preferred ?? [""],
+          benefits: initialData.description.benefits ?? [""],
           salary: {
-            ...defaultFormData.salary,
-            ...initialData.description.salary,
+            min: initialData.description.salary?.min ?? defaultFormData.salary!.min,
+            max: initialData.description.salary?.max ?? defaultFormData.salary!.max,
+            currency: initialData.description.salary?.currency ?? defaultFormData.salary!.currency,
           },
         });
       } else {
@@ -191,11 +191,7 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
     e.preventDefault();
 
     if (!validateForm()) {
-      toast({
-        title: "Validation Error",
-        description: "Please fix the errors in the form before submitting.",
-        variant: "destructive",
-      })
+      toast.error("Validation error!!")
       return
     }
 
@@ -210,7 +206,7 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
       },
       body: JSON.stringify({userid, formData}),
     })
-    const data = await response.json();
+    await response.json();
 
     try {
       // Clean up form data before submission
@@ -224,18 +220,18 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
 
       await onSubmit(cleanedData)
 
-      toast({
-        title: mode === "create" ? "Job Created" : "Job Updated",
-        description: `Job "${formData.title}" has been ${mode === "create" ? "created" : "updated"} successfully.`,
-      })
+      toast.success(
+        mode === "create"
+          ? `Job "${formData.title}" has been created successfully.`
+          : `Job "${formData.title}" has been updated successfully.`
+      )
 
       onClose()
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to ${mode === "create" ? "create" : "update"} job. Please try again.`,
-        variant: "destructive",
-      })
+    } catch (err) {
+      toast.error(
+        `Failed to ${mode === "create" ? "create" : "update"} job. Please try again.`
+      )
+      console.error("Error submitting job form:", err)
     } finally {
       setIsSubmitting(false)
     }
@@ -248,6 +244,7 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
 
   return (
     <Modal open={isOpen} onOpenChange={onClose}>
+      <Toaster position="top-right" />
       <ModalContent className="max-w-4xl font-poppins max-h-[90vh]">
         <ModalHeader>
           <ModalTitle>
@@ -754,11 +751,11 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
                     </div>
                     <Switch
                       id="status-switch"
-                      checked={formData.status === true }
+                      checked={formData.status === "active"}
                       onCheckedChange={(checked) =>
                         handleInputChange(
                           "status",
-                          checked ? true : false  
+                          checked ? "active" : "inactive"
                         )
                       }
                     />
@@ -782,12 +779,12 @@ export default function JobFormModal({ isOpen, onClose, onSubmit, initialData, m
                         </div>
                         <Badge
                           variant={
-                            formData.status === true
+                            formData.status === "active"
                               ? "default"
                               : "secondary"
                           }
                         >
-                          {formData.status === true ? "Active" : "Inactive"}
+                          {formData.status === "active" ? "Active" : "Inactive"}
                         </Badge>
                       </div>
                       <p className="text-sm line-clamp-2">

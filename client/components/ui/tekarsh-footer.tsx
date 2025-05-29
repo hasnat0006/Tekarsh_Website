@@ -1,4 +1,4 @@
-import { Facebook, Twitter, Instagram, Linkedin, Github, MapPin } from "lucide-react"
+import { Facebook, Twitter, Linkedin, Github } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 

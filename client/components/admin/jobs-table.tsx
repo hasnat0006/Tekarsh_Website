@@ -47,86 +47,6 @@ import {
 
 import { JobFormData, Job } from "@/types/interface";
 
-// Mock applicants data for each job
-const mockJobApplicants: Record<string, any[]> = {
-  "1": [
-    {
-      id: "1",
-      name: "Sarah Johnson",
-      email: "sarah.johnson@example.com",
-      phone: "+1 (555) 123-4567",
-      photo: "/placeholder.svg?height=40&width=40",
-      appliedDate: "2023-05-15T10:30:00Z",
-      status: "interview",
-      aiScore: 88,
-      skills: ["React", "TypeScript", "Next.js", "JavaScript", "CSS"],
-      location: "San Francisco, CA",
-    },
-    {
-      id: "2",
-      name: "Alex Rodriguez",
-      email: "alex.rodriguez@example.com",
-      phone: "+1 (555) 234-5678",
-      photo: "/placeholder.svg?height=40&width=40",
-      appliedDate: "2023-05-12T14:20:00Z",
-      status: "review",
-      aiScore: 92,
-      skills: ["React", "Vue.js", "Node.js", "TypeScript"],
-      location: "Austin, TX",
-    },
-    {
-      id: "3",
-      name: "Emma Chen",
-      email: "emma.chen@example.com",
-      phone: "+1 (555) 345-6789",
-      photo: "/placeholder.svg?height=40&width=40",
-      appliedDate: "2023-05-10T09:45:00Z",
-      status: "hired",
-      aiScore: 95,
-      skills: ["React", "TypeScript", "GraphQL", "AWS"],
-      location: "Seattle, WA",
-    },
-    {
-      id: "4",
-      name: "James Wilson",
-      email: "james.wilson@example.com",
-      phone: "+1 (555) 456-7890",
-      photo: "/placeholder.svg?height=40&width=40",
-      appliedDate: "2023-05-08T16:30:00Z",
-      status: "rejected",
-      aiScore: 72,
-      skills: ["JavaScript", "HTML", "CSS", "jQuery"],
-      location: "Remote",
-    },
-  ],
-  "2": [
-    {
-      id: "5",
-      name: "Michael Chen",
-      email: "michael.chen@example.com",
-      phone: "+1 (555) 567-8901",
-      photo: "/placeholder.svg?height=40&width=40",
-      appliedDate: "2023-05-14T11:15:00Z",
-      status: "interview",
-      aiScore: 89,
-      skills: ["Figma", "Sketch", "User Research", "Prototyping"],
-      location: "New York, NY",
-    },
-    {
-      id: "6",
-      name: "Lisa Park",
-      email: "lisa.park@example.com",
-      phone: "+1 (555) 678-9012",
-      photo: "/placeholder.svg?height=40&width=40",
-      appliedDate: "2023-05-11T13:45:00Z",
-      status: "review",
-      aiScore: 91,
-      skills: ["Adobe XD", "InVision", "User Testing", "Wireframing"],
-      location: "Los Angeles, CA",
-    },
-  ],
-};
-
 const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function JobsTable() {
@@ -215,7 +135,7 @@ export default function JobsTable() {
     setEditingJob(null);
   };
 
-  const toggleJobStatus = async (id: string, currentStatus: string) => {
+  const toggleJobStatus = async (id: string) => {
     const response = await fetch(`${url}/admin/changeStatus?id=${id}`);
     const data = await response.json();
     if (!data.ok) {
@@ -228,7 +148,7 @@ export default function JobsTable() {
         job.job_id === id
           ? {
               ...job,
-              status: !currentStatus,
+              status: !job.status,
             }
           : job
       )
@@ -423,7 +343,7 @@ export default function JobsTable() {
                       <Switch
                         checked={job.status === true}
                         onCheckedChange={() =>
-                          toggleJobStatus(job.job_id, job.status)
+                          toggleJobStatus(job.job_id)
                         }
                       />
                       <Label>
@@ -567,7 +487,7 @@ export default function JobsTable() {
         isOpen={isEditModalOpen}
         onClose={closeEditModal}
         onSubmit={handleEditJob}
-        initialData={editingJob}
+        initialData={editingJob ? editingJob : undefined}
         mode="edit"
       />
 

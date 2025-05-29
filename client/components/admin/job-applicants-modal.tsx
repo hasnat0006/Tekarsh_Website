@@ -64,14 +64,12 @@ export default function JobApplicantsModal({
   const [selectedApplicant, setSelectedApplicant] =
     React.useState<ApplicantType | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
   const [applicants, setApplicants] = React.useState<ApplicantType[]>([]);
 
   const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   React.useEffect(() => {
     const fetchApplicants = async () => {
-      setIsLoading(true);
       try {
         const response = await fetch(
           `${url}/admin/specific_job_post?id=${job.job_id}`
@@ -83,13 +81,10 @@ export default function JobApplicantsModal({
         setApplicants(data.applicants);
       } catch (error) {
         console.error("Error fetching applicants:", error);
-      } finally {
-        setIsLoading(false);
       }
     };
     fetchApplicants();
-  }, [job.job_id]);
-  // backend likte hobe then testing
+  }, [job.job_id, url]);
 
   React.useEffect(() => {
     console.log("Applicants updated:", applicants);
@@ -160,10 +155,8 @@ export default function JobApplicantsModal({
   }, [applicants]);
 
   const handleViewApplicant = async (applicant: ApplicantType) => {
-    setIsLoading(true);
     setSelectedApplicant(applicant);
     setIsProfileModalOpen(true);
-    setIsLoading(false);
   };
 
   const handleStatusUpdate = (applicantId: string, newStatus: string) => {

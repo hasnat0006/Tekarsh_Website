@@ -2,14 +2,15 @@
 
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
-
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect, useState, useCallback } from "react";
 
 type Testimonial = {
   quote: string;
   name: string;
   designation: string;
   src: string;
+  company_logo: string;
 };
 export const AnimatedTestimonials = ({
   testimonials,
@@ -20,9 +21,9 @@ export const AnimatedTestimonials = ({
 }) => {
   const [active, setActive] = useState(0);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setActive((prev) => (prev + 1) % testimonials.length);
-  };
+  }, [testimonials.length]);
 
   const handlePrev = () => {
     setActive((prev) => (prev - 1 + testimonials.length) % testimonials.length);
@@ -37,7 +38,7 @@ export const AnimatedTestimonials = ({
       const interval = setInterval(handleNext, 5000);
       return () => clearInterval(interval);
     }
-  }, [autoplay]);
+  }, [autoplay, handleNext]);
 
   const randomRotateY = () => {
     return Math.floor(Math.random() * 21) - 10;
@@ -79,7 +80,7 @@ export const AnimatedTestimonials = ({
                   }}
                   className="absolute inset-0 origin-bottom"
                 >
-                  <img
+                  <Image
                     src={testimonial.src}
                     alt={testimonial.name}
                     width={500}
@@ -116,16 +117,14 @@ export const AnimatedTestimonials = ({
               {testimonials[active].name}
             </h3>
 
-            <div className="mt-4 flex items-center gap-2">
-              <img
+              <Image
                 src={testimonials[active].company_logo}
                 alt={testimonials[active].name}
                 width={50}
-                height={50}
+                height={24}
                 draggable={false}
                 className="h-6 w-auto"
               />
-            </div>
             <p className="text-sm text-gray-500 dark:text-neutral-500">
               {testimonials[active].designation}
             </p>

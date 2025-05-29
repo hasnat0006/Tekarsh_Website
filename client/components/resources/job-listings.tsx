@@ -10,10 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { Job, JobListingsProps } from "@/types/interface";
 import { Briefcase, MapPin, Search, Share2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const url = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -25,8 +24,6 @@ export default function JobListings({ category }: JobListingsProps) {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [jobsData, setJobsData] = useState<Job[]>([]);
-  const searchParams = useSearchParams();
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -41,33 +38,22 @@ export default function JobListings({ category }: JobListingsProps) {
     };
     fetchJobs().catch((error) => {
       console.error("Error fetching jobs:", error);
-      toast({
-        title: "Error fetching jobs",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+      toast.error("Error fetching jobs. Please try again later.");
     });
   }, []);
 
-  // Check for job ID in URL params on component mount
   useEffect(() => {
-    const jobId = searchParams.get("jobId");
+    // Check if jobId is in URL and open modal if it exists
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobId = urlParams.get("jobId");
     if (jobId) {
-      const job = jobsData.find((j) => j.job_id === jobId);
+      const job = jobsData.find((j) => j.job_id.toString() === jobId);
       if (job) {
         setSelectedJob(job);
         setIsModalOpen(true);
-
-        // Scroll to open positions section
-        const openPositionsSection = document.getElementById("open-positions");
-        if (openPositionsSection) {
-          setTimeout(() => {
-            openPositionsSection.scrollIntoView({ behavior: "smooth" });
-          }, 300);
-        }
       }
     }
-  }, [searchParams]);
+  }, [jobsData]);
 
   // Filter jobs based on category, search term, location, and experience
   const filteredJobs = jobsData.filter((job) => {
@@ -133,19 +119,11 @@ export default function JobListings({ category }: JobListingsProps) {
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        toast({
-          title: "Link copied!",
-          description:
-            "Job link has been copied to clipboard. Share it with others!",
-        });
+        toast.success("Link copied to clipboard!");
       })
       .catch((err) => {
         console.error("Failed to copy: ", err);
-        toast({
-          title: "Couldn't copy link",
-          description: "Please try again or copy the URL manually.",
-          variant: "destructive",
-        });
+        toast.error("Failed to copy link. Please try again.");
       });
   };
 
@@ -167,6 +145,7 @@ export default function JobListings({ category }: JobListingsProps) {
   return (
     <div className="border-0 border-gray-600 w-full md:w-5xl">
       {/* Search and Filters */}
+      <Toaster position="top-right" />
       <div className="mb-8 bg-[var(--word)]/5 p-4 rounded-xl shadow-sm">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
@@ -246,14 +225,14 @@ export default function JobListings({ category }: JobListingsProps) {
                       <MapPin className="h-4 w-4 mr-1" />
                       <span>{job.description.location}</span>
                     </div>
-                   
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Badge
                       variant="outline"
                       className="bg-violet-50 text-violet-700 hover:bg-violet-100 border-violet-200"
                     >
-                      {job.description.salary?.currency}{": "}
+                      {job.description.salary?.currency}
+                      {": "}
                       {job.description.salary?.min} -{" "}
                       {job.description.salary?.max}{" "}
                     </Badge>

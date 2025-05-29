@@ -93,7 +93,7 @@ export default function ApplicantProfileModal({
       }
       return total + 1;
     }, 0);
-  }, [applicant.cv_data.experience]);
+  }, [applicant.cv_data]);
 
   const handleStatusChange = (newStatus: string) => {
     if (onStatusUpdate) {

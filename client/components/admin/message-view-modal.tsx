@@ -74,7 +74,7 @@ export default function MessageViewModal({
 
       return () => clearTimeout(timeoutId);
     }
-  }, [isOpen, message?.id, message?.status]); // Only run when these specific values change
+  }, [isOpen, message, onStatusUpdate]); // Only run when these specific values change
 
   const handleInstantReply = () => {
     setShowReplyBox(true);
@@ -118,7 +118,7 @@ export default function MessageViewModal({
       setReplyContent("");
       onClose();
     } catch (error) {
-      setReplyError("Failed to send reply. Please try again.");
+      setReplyError(`Failed to send reply. Please try again. Error: ${error}`);
       toast.error("Failed to send reply. Please try again.");
     
     } finally {

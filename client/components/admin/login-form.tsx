@@ -11,11 +11,10 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import toast, {Toaster} from "react-hot-toast";
 import Image from "next/image";
 const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -36,7 +35,6 @@ export default function LoginForm() {
   const [success, setSuccess] = useState("");
 
   const router = useRouter();
-  const { toast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -62,10 +60,7 @@ export default function LoginForm() {
       console.log("Login response:", data);
       if (data.ok) {
         setSuccess("Login successful! Redirecting...");
-        toast({
-          title: "Welcome back!",
-          description: `Logged in as ${data.result?.email}`,
-        });
+        toast.success("Login successful! Redirecting...");
         // localStorage.setItem("userid", data.result.id)
         // Small delay to show success message
         setTimeout(() => {
@@ -74,20 +69,12 @@ export default function LoginForm() {
         }, 1000);
       } else {
         setError(data.message || "Login failed");
-        toast({
-          title: "Login failed",
-          description: data.message || "Please check your credentials",
-          variant: "destructive",
-        });
+        toast.error(data.message || "Please check your credentials");
       }
     } catch (err) {
-      const errorMessage = "Invalid credentials!";
+      const errorMessage = `Invalid credentials! + ${err}`;
       setError(errorMessage);
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast.error(errorMessage);
     }
     setIsLoading(false);
   };
@@ -97,6 +84,7 @@ export default function LoginForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4">
+      <Toaster position="top-right" />
       <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="space-y-4 text-center">
           <Image

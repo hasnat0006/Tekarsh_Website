@@ -2,12 +2,11 @@
 
 import type React from "react"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const [isScrolling, setIsScrolling] = useState(false)
 
   useEffect(() => {
     // Apply smooth scrolling to the document
@@ -25,7 +24,6 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       if (!href || !href.startsWith("#")) return
 
       e.preventDefault()
-      setIsScrolling(true)
 
       const targetId = href.substring(1)
       const targetElement = document.getElementById(targetId)
@@ -49,8 +47,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
         targetElement.focus({ preventScroll: true })
 
         setTimeout(() => {
-          setIsScrolling(false)
-        }, 1000) // Adjust timing based on your scroll animation duration
+        }, 1000) 
       }
     }
 

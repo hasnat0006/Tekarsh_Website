@@ -149,13 +149,10 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
       console.log("CV Analysis Data:", data.analysis);
       return data;
     } catch (error) {
-      toast.error("There was an error analyzing your CV.");
+      toast.error(`There was an error analyzing your CV.`);
+      console.error("Error analyzing CV:", error);
     }
   };
-
-  // useEffect(() => {
-  //   console.log("Form Data from effect:", formData);
-  // }, [formData]);
 
   const [isCVUploading, setIsCVUploading] = useState(false);
   const [isAnalysis, setIsAnalysis] = useState(false);
@@ -277,19 +274,11 @@ export default function JobModal({ job, isOpen, onClose }: JobModalProps) {
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        toast({
-          title: "Link copied!",
-          description:
-            "Job link has been copied to clipboard. Share it with others!",
-        });
+        toast("Link copied to clipboard!");
       })
       .catch((err) => {
         console.error("Failed to copy: ", err);
-        toast({
-          title: "Couldn't copy link",
-          description: "Please try again or copy the URL manually.",
-          variant: "destructive",
-        });
+        toast("Failed to copy link. Please try again.");
       });
   };
 

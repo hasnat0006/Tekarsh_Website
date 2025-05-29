@@ -44,7 +44,7 @@ export default function MessagesTable() {
         console.log("Fetched messages:", data)
         setMessages(data)
       } catch (error) {
-        toast.error("Error fetching messages!")
+        toast.error(`Error fetching messages! ${error}`)
         return;
       }
     }
